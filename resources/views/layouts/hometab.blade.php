@@ -15,7 +15,7 @@
                 スケジュール
             </div>
         </div>
-        <div class="menu_child schedule_content">
+        <div class="menu_child schedule_content" onclick="linkToScheduleRegistraion()">
             <div class="menu_child_content">
                 新規作成
             </div>
@@ -107,7 +107,6 @@
     </div>
     <div class="home_body">
         <div class="home_content">
-            表示2
             @yield('function_content')
         </div>
         
@@ -132,6 +131,10 @@ function changeStateMenuChild(parentName){
     for(var i=0;i<childList.length;i++){
         childList[i].hidden = childList[i].hidden ? false : true;
     }
+}
+
+function linkToScheduleRegistraion(){
+    location.href="<?php echo(url('/home/schedule/new')); ?>";
 }
 </script>
 
