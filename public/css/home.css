@@ -79,6 +79,11 @@
     border-color: black;
 }
 
+.registration_form_content {
+    width: 100%;
+    height: 90%;
+}
+
 .form_header_content {
     font-size:18px;
     position: absolute;
@@ -88,7 +93,7 @@
 
 .form_elements {
     width: 100%;
-    height: 10%;
+    height: 5%;
     display: flex;
     border-bottom: solid;
     border-color: black;
@@ -110,7 +115,39 @@
 
 .form_element_value {
     width: 60%;
+    position: relative;
     border-right: solid;
     border-color: black;
 }
 
+.form_element_value_no_relative {
+    width: 60%;
+    border-right: solid;
+    border-color: black;
+}
+
+.form_element_text {
+    width: 100%;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.form_element_time {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.form_element_checkbox {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.form_element_color {
+    width: 30%;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+}
