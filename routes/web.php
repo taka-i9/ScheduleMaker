@@ -36,3 +36,5 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 Route::get('/home/schedule/new', function () {
     return view('scheduleRegistrationForm');
 });
+
+Route::post('/home/schedule/add', [App\Http\Controllers\ScheduleController::class, 'add'])->name('schedule.add');

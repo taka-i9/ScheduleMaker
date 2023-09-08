@@ -9,15 +9,29 @@
         </div>
     </div>
     <div class="registration_form_content">
-        <form method="POST" action="" class="registration_form_content">
+        <form method="POST" action="{{ route('schedule.add') }}" class="registration_form_content">
+            @csrf
+
             <div class="form_elements">
                 <div class="form_element_name">
                     <div class="form_element_content">
                         スケジュール名<br>
                     </div>
                 </div>
-                <div class="form_element_value">
-                    <input type="text" name="name" class="form_element_text">
+                <div class="form_element_input_base">
+                    <div class="form_element_error">
+                        @if ($errors->has('name'))
+                            <!--<span class="invalid-feedback" role="alert">-->
+                            <span style="color: red;" role="alert">
+                                {{ $errors->first('name') }}
+                            </span>
+                        @endif
+                    </div>
+                    <div class="form_element_input">
+                        <div class="form_element_value">
+                            <input type="text" name="name" class="form_element_text {{ $errors->has('name') ? 'is-invalid' : '' }}">
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="form_elements">
@@ -26,11 +40,23 @@
                         開始時刻<br>
                     </div>
                 </div>
-                <div class="form_element_value">
-                    <div class="form_element_time">
-                        <input type="date" name="begin_date">
-                        &nbsp;
-                        <input type="time" name="begin_time">
+                <div class="form_element_input_base">
+                    <div class="form_element_error">
+                        @if ($errors->has('begin_time'))
+                            <!--<span class="invalid-feedback" role="alert">-->
+                            <span style="color: red;" role="alert">
+                                {{ $errors->first('begin_time') }}
+                            </span>
+                        @endif
+                    </div>
+                    <div class="form_element_input">
+                        <div class="form_element_value">
+                            <div class="form_element_time">
+                                <input type="date" name="begin_date">
+                                &nbsp;
+                                <input type="time" name="begin_time">
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -40,11 +66,23 @@
                         終了時刻<br>
                     </div>
                 </div>
-                <div class="form_element_value">
-                    <div class="form_element_time">
-                        <input type="date" name="end_date">
-                        &nbsp;
-                        <input type="time" name="end_time">
+                <div class="form_element_input_base">
+                    <div class="form_element_error">
+                        @if ($errors->has('end_time'))
+                            <!--<span class="invalid-feedback" role="alert">-->
+                            <span style="color: red;" role="alert">
+                                {{ $errors->first('end_time') }}
+                            </span>
+                        @endif
+                    </div>
+                    <div class="form_element_input">
+                        <div class="form_element_value">
+                            <div class="form_element_time">
+                                <input type="date" name="end_date">
+                                &nbsp;
+                                <input type="time" name="end_time">
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -54,8 +92,10 @@
                         繰り返し設定する<br>
                     </div>
                 </div>
-                <div class="form_element_value">
-                    <input type="checkbox" name="is_repetition" class="form_element_checkbox" onchange="changStateRepetition(this)">
+                <div class="form_element_input_no_error">
+                    <div class="form_element_value">
+                        <input type="checkbox" name="is_repetition" class="form_element_checkbox" onchange="changStateRepetition(this)">
+                    </div>
                 </div>
             </div>
             <div class="form_elements" id="repetition_form" hidden>
@@ -64,30 +104,32 @@
                         繰り返し設定<br>
                     </div>
                 </div>
-                <div class="form_element_value" style="display: flex;">
-                    <div class="form_element_checkbox">
-                        <input type="checkbox" name="repetition_sun" id="repetition_sun"> 日
-                    </div>
-                    <div class="form_element_checkbox" style="margin-left: 40px;">
-                        <input type="checkbox" name="repetition_mon" id="repetition_mon"> 月
-                    </div>
-                    <div class="form_element_checkbox" style="margin-left: 80px;">
-                        <input type="checkbox" name="repetition_tue" id="repetition_tue"> 火
-                    </div>
-                    <div class="form_element_checkbox" style="margin-left: 120px;">
-                        <input type="checkbox" name="repetition_wed" id="repetition_wed"> 水
-                    </div>
-                    <div class="form_element_checkbox" style="margin-left: 160px;">
-                        <input type="checkbox" name="repetition_thu" id="repetition_thu"> 木
-                    </div>
-                    <div class="form_element_checkbox" style="margin-left: 200px;">
-                        <input type="checkbox" name="repetition_fri" id="repetition_fri"> 金
-                    </div>
-                    <div class="form_element_checkbox" style="margin-left: 240px;">
-                        <input type="checkbox" name="repetition_sat" id="repetition_sat"> 土
-                    </div>
-                    <div class="form_element_checkbox" style="margin-left: 280px;">
-                        <input type="checkbox" name="repetition_everyday" onchange="changeStateReptationEveryday(this)"> 毎日
+                <div class="form_element_input_no_error">
+                    <div class="form_element_value" style="display: flex;">
+                        <div class="form_element_checkbox">
+                            <input type="checkbox" name="repetition_sun" id="repetition_sun"> 日
+                        </div>
+                        <div class="form_element_checkbox" style="margin-left: 40px;">
+                            <input type="checkbox" name="repetition_mon" id="repetition_mon"> 月
+                        </div>
+                        <div class="form_element_checkbox" style="margin-left: 80px;">
+                            <input type="checkbox" name="repetition_tue" id="repetition_tue"> 火
+                        </div>
+                        <div class="form_element_checkbox" style="margin-left: 120px;">
+                            <input type="checkbox" name="repetition_wed" id="repetition_wed"> 水
+                        </div>
+                        <div class="form_element_checkbox" style="margin-left: 160px;">
+                            <input type="checkbox" name="repetition_thu" id="repetition_thu"> 木
+                        </div>
+                        <div class="form_element_checkbox" style="margin-left: 200px;">
+                            <input type="checkbox" name="repetition_fri" id="repetition_fri"> 金
+                        </div>
+                        <div class="form_element_checkbox" style="margin-left: 240px;">
+                            <input type="checkbox" name="repetition_sat" id="repetition_sat"> 土
+                        </div>
+                        <div class="form_element_checkbox" style="margin-left: 280px;">
+                            <input type="checkbox" name="repetition_everyday" onchange="changeStateReptationEveryday(this)"> 毎日
+                        </div>
                     </div>
                 </div>
             </div>
@@ -97,8 +139,20 @@
                         メモ<br>
                     </div>
                 </div>
-                <div class="form_element_value">
-                    <input type="text" class="form_element_text">
+                <div class="form_element_input_base">
+                    <div class="form_element_error">
+                        @if ($errors->has('memo'))
+                            <!--<span class="invalid-feedback" role="alert">-->
+                            <span style="color: red;" role="alert">
+                                {{ $errors->first('memo') }}
+                            </span>
+                        @endif
+                    </div>
+                    <div class="form_element_input">
+                        <div class="form_element_value">
+                            <input type="text" name="memo" class="form_element_text">
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="form_elements" hidden>
@@ -129,8 +183,10 @@
                         ToDoリストとの重複を許可<br>
                     </div>
                 </div>
-                <div class="form_element_value">
-                <input type="checkbox" name="is_duplecation" class="form_element_checkbox">
+                <div class="form_element_input_no_error">
+                    <div class="form_element_value">
+                        <input type="checkbox" name="is_duplecation" class="form_element_checkbox">
+                    </div>
                 </div>
             </div>
             <div class="form_elements">
@@ -139,8 +195,10 @@
                         ラベルの色<br>
                     </div>
                 </div>
-                <div class="form_element_value">
-                    <input type="color" name="color" class="form_element_color" value="#ffffff">
+                <div class="form_element_input_no_error">
+                    <div class="form_element_value">
+                        <input type="color" name="color" class="form_element_color" value="#ffffff">
+                    </div>
                 </div>
             </div>
             <div class="form_elements">
@@ -149,8 +207,10 @@
                         テンプレートにする<br>
                     </div>
                 </div>
-                <div class="form_element_value">
-                    <input type="checkbox" name="is_template" class="form_element_checkbox" onchange="changStateTemplate(this)">
+                <div class="form_element_input_no_error">
+                    <div class="form_element_value">
+                        <input type="checkbox" name="is_template" class="form_element_checkbox" onchange="changStateTemplate(this)">
+                    </div>
                 </div>
             </div>
             <div class="form_elements" id="template_form" hidden>
@@ -159,8 +219,20 @@
                         テンプレート名<br>
                     </div>
                 </div>
-                <div class="form_element_value">
-                <input type="text" name="template_name" class="form_element_text">
+                <div class="form_element_input_base">
+                    <div class="form_element_error">
+                        @if ($errors->has('template_name'))
+                            <!--<span class="invalid-feedback" role="alert">-->
+                            <span style="color: red;" role="alert">
+                                {{ $errors->first('template_name') }}
+                            </span>
+                        @endif
+                    </div>
+                    <div class="form_element_input">
+                        <div class="form_element_value">
+                            <input type="text" name="template_name" class="form_element_text">
+                        </div>
+                    </div>
                 </div>
             </div>
             <button type="submit">登録</button>
