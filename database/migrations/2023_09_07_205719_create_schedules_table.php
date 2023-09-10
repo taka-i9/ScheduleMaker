@@ -18,16 +18,17 @@ return new class extends Migration
             $table->string('name');
             $table->dateTime('begin_time');
             $table->dateTime('end_time')->nullable();
-            $table->integer('reptation_state')->nullable();
-            $table->integer('elapsed_days')->unllable();
-            $table->string('memo');
+            $table->integer('repetition_state')->nullable();
+            $table->integer('elapsed_days')->nullable();
+            $table->string('memo')->nullable();
             $table->unsignedBigInteger('tag1_id')->nullable();
             $table->unsignedBigInteger('tag2_id')->nullable();
             $table->unsignedBigInteger('tag3_id')->nullable();
-            $table->boolean('isset_alerm');
+            $table->boolean('is_set_alerm')->default(false);
             $table->dateTime('alerm_time')->nullable();
-            $table->boolean('is_duplecation');
+            $table->boolean('is_duplecation')->default(false);
             $table->string('color');
+            $table->string('template_name')->nullable();
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
