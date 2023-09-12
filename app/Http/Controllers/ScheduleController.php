@@ -56,7 +56,10 @@ class ScheduleController extends Controller
             }
         }
         if(!$request->input("is_repetition")) {
-            $repetation_state = 0;
+            $repetition_state = 0;
+        }
+        if($request->input("repetition_everyday")) {
+            $repetition_state = 127;
         }
 
         if($request->input('is_duplecation') == NULL) $is_duplication = false;

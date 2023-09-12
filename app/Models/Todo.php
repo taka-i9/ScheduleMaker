@@ -15,7 +15,8 @@ class Todo extends Model
         'type',
         'name',
         'deadline',
-        'required_minute',
+        'required_minutes',
+        'rest_minutes',
         'repetition_state',
         'memo',
         'tag1_id',
@@ -29,7 +30,8 @@ class Todo extends Model
 
     protected $casts = [
         'deadline' => 'datetime',
-        'required_minute' => 'integer',
+        'required_minutes' => 'integer',
+        'rest_minutes' => 'integer',
         'reptition_state' => 'integer',
         'priority_level' => 'integer',
         'is_done' => 'boolean',

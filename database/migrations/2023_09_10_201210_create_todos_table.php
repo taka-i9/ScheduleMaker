@@ -18,8 +18,8 @@ return new class extends Migration
             $table->string('type');
             $table->string('name');
             $table->dateTime('deadline');
-            $table->integer('required_minute');
-            $table->integer('rest_minute');
+            $table->integer('required_minutes');
+            $table->integer('rest_minutes');
             $table->integer('repetition_state')->nullable();
             $table->string('memo')->nullable();
             $table->unsignedBigInteger('tag1_id')->nullable();

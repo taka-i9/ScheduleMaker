@@ -200,11 +200,11 @@
                 <div class="form_element_input_no_error">
                     <div class="form_element_value">
                         <select name="priority_level" id="priority_level" class="form_element_text">
-                            <option value="5">5</option>
-                            <option value="4">4</option>
-                            <option value="3">3</option>
-                            <option value="2">2</option>
-                            <option value="1">1</option>
+                            <option value="5" {{ old('priority_level') == '5' ? 'selected' : '' }}>5</option>
+                            <option value="4" {{ old('priority_level') == '4' ? 'selected' : '' }}>4</option>
+                            <option value="3" {{ old('priority_level') == '3' ? 'selected' : '' }}>3</option>
+                            <option value="2" {{ old('priority_level') == '2' ? 'selected' : '' }}>2</option>
+                            <option value="1" {{ old('priority_level') == '1' ? 'selected' : '' }}>1</option>
                         </select>
                     </div>
                 </div>
@@ -286,6 +286,9 @@
         }
         else {
             document.getElementById("required_minute").min = 0;
+        }
+        if(document.getElementById("required_minute").value == "") {
+            document.getElementById("required_minute").value = 0;
         }
     }
 </script>
