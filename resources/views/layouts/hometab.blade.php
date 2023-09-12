@@ -35,7 +35,7 @@
                 To do
             </div>
         </div>
-        <div class="menu_child todo_content">
+        <div class="menu_child todo_content" onclick="linkToToDoRegistraion()">
             <div class="menu_child_content">
                 新規作成
             </div>
@@ -134,7 +134,11 @@ function changeStateMenuChild(parentName){
 }
 
 function linkToScheduleRegistraion(){
-    location.href="<?php echo(url('/home/schedule/new')); ?>";
+    location.href = "<?php echo(url('/home/schedule/new')); ?>";
+}
+
+function linkToToDoRegistraion() {
+    location.href = "<?php echo(url('/home/todo/new')); ?>";
 }
 </script>
 

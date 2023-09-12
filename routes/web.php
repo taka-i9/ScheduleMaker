@@ -38,3 +38,9 @@ Route::get('/home/schedule/new', function () {
 });
 
 Route::post('/home/schedule/add', [App\Http\Controllers\ScheduleController::class, 'add'])->name('schedule.add');
+
+Route::get('/home/todo/new', function () {
+    return view('todoRegistrationForm');
+});
+
+Route::post('/home/todo/add', [App\Http\Controllers\ToDoController::class, 'add'])->name('todo.add');
