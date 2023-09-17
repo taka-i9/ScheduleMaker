@@ -44,3 +44,11 @@ Route::get('/home/todo/new', function () {
 });
 
 Route::post('/home/todo/add', [App\Http\Controllers\ToDoController::class, 'add'])->name('todo.add');
+
+Route::get('/home/workflow/new', function () {
+    return view('workflowRegistrationForm');
+});
+
+Route::post('/home/workflow/add', [App\Http\Controllers\WorkFlowController::class, 'add'])->name('workflow.add');
+
+Route::post('/home/workflow/edit', [App\Http\Controllers\WorkFlowController::class, 'edit_form'])->name('workflow.edit_form');

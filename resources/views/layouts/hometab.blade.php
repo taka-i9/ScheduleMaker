@@ -55,7 +55,7 @@
                 ワークフロー
             </div>
         </div>
-        <div class="menu_child workflow_content">
+        <div class="menu_child workflow_content" onclick="linkToWorkFlowRegistration()">
             <div class="menu_child_content">
                 新規作成
             </div>
@@ -139,6 +139,10 @@ function linkToScheduleRegistraion(){
 
 function linkToToDoRegistraion() {
     location.href = "<?php echo(url('/home/todo/new')); ?>";
+}
+
+function linkToWorkFlowRegistration() {
+    location.href = "<?php echo(url('/home/workflow/new')); ?>";
 }
 </script>
 
