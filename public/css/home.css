@@ -171,3 +171,62 @@
     width: 60%;
     height: 100%;
 }
+
+.registration_menu {
+    width: 20%;
+    height: 25%;
+    background-color: lightgreen;
+    position: absolute;
+    border-left: solid;
+    border-right: solid;
+    border-bottom: solid;
+    border-color: black;
+}
+
+.registration_free_field {
+    width: 2000px;
+    height: 2000px;
+    background-color: beige;
+    position: absolute;
+}
+
+.registration_menu_parent {
+    width: 100%;
+    height: 20%;
+    position: relative;
+    border-bottom: solid;
+    border-color: black;
+}
+
+.registration_menu_parent_no_border {
+    width: 100%;
+    height: 20%;
+    position: relative;
+}
+
+.registration_menu_parent_content {
+    font-size: 18px;
+    line-height: 100%;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.registration_free_field_base {
+    display: flex; 
+    overflow: scroll; 
+    position: relative;
+}
+
+.divide_relative_field_2 {
+    height: 50%;
+    width: 100%;
+    position: relative;
+}
+
+.divide_relative_field_2_content {
+    width: 100%;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+}
