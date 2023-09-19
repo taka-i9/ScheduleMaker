@@ -174,7 +174,7 @@
 
 .registration_menu {
     width: 20%;
-    height: 25%;
+    height: 30%;
     background-color: lightgreen;
     position: absolute;
     border-left: solid;
@@ -192,7 +192,7 @@
 
 .registration_menu_parent {
     width: 100%;
-    height: 20%;
+    height: 17%;
     position: relative;
     border-bottom: solid;
     border-color: black;
@@ -200,7 +200,7 @@
 
 .registration_menu_parent_no_border {
     width: 100%;
-    height: 20%;
+    height: 15%;
     position: relative;
 }
 
@@ -229,4 +229,14 @@
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
+}
+
+.registration_free_field_content {
+    border: solid; 
+    border-color: black; 
+    position: absolute; 
+    width: 200px; 
+    height: 75px; 
+    background-color: white; 
+    text-align: center;
 }
