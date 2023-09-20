@@ -240,3 +240,14 @@
     background-color: white; 
     text-align: center;
 }
+
+.connection_arrow {
+    position: absolute;
+    background-image: linear-gradient(
+        45deg,
+        transparent 51%,
+        black 51%,
+        black 52%,
+        transparent 52%
+    );
+}
