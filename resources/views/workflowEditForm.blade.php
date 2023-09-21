@@ -59,6 +59,8 @@
     var connect_relation_rev = {};
     var movingContent = "";
     var block_once = false;
+    var prev_left = "";
+    var prev_top = "";
 
     function addForm(id) {
         let titleData = document.createElement("input");
@@ -93,27 +95,52 @@
         document.getElementById("workflow_data").appendChild(marginTopData);
     }
 
+    function removeContentComplete(id) {
+        if(id in connect_relation) {
+            Object.keys(connect_relation[id]).forEach(function(v) {
+                document.getElementById("connection_" + id + "_" + v).remove();
+                document.getElementById("connection_" + id + "_" + v + "_form").remove();
+                delete connect_relation_rev[v][id];
+            });
+            delete connect_relation[id];
+        }
+        if(id in connect_relation_rev) {
+            Object.keys(connect_relation_rev[id]).forEach(function(v) {
+                document.getElementById("connection_" + v + "_" + id).remove();
+                document.getElementById("connection_" + v + "_" + id + "_form").remove();
+                delete connect_relation[v][id];
+            });
+            delete connect_relation_rev[id];
+        }
+        document.getElementById(id_head + id).remove();
+        document.getElementById(id_head + id + "_title_form").remove();
+        document.getElementById(id_head + id + "_time_hour_form").remove();
+        document.getElementById(id_head + id + "_time_minute_form").remove();
+        document.getElementById(id_head + id + "_margin_left_form").remove();
+        document.getElementById(id_head + id + "_margin_top_form").remove();
+    }
+
     function removeConnection(id) {
-        if(movingContent in connect_relation) {
-            connect_relation[movingContent].forEach(function(v) {
+        if(id in connect_relation) {
+            Object.keys(connect_relation[id]).forEach(function(v) {
                 document.getElementById("connection_" + id + "_" + v).remove();
             });
         }
-        if(movingContent in connect_relation_rev) {
-            connect_relation_rev[movingContent].forEach(function(v) {
+        if(id in connect_relation_rev) {
+            Object.keys(connect_relation_rev[id]).forEach(function(v) {
                 document.getElementById("connection_" + v + "_" + id).remove();
             });
         }
     }
 
     function attachConnection(id) {
-        if(movingContent in connect_relation) {
-            connect_relation[movingContent].forEach(function(v) {
+        if(id in connect_relation) {
+            Object.keys(connect_relation[id]).forEach(function(v) {
                 createArrow(id, v);
             });
         }
-        if(movingContent in connect_relation_rev) {
-            connect_relation_rev[movingContent].forEach(function(v) {
+        if(id in connect_relation_rev) {
+            Object.keys(connect_relation_rev[id]).forEach(function(v) {
                 createArrow(v, id);
             });
         }
@@ -145,12 +172,14 @@
             document.getElementById(id_head + movingContent + "_margin_top_form").value = document.getElementById(id_head + movingContent).style.marginTop;
             //関連するリンクを再生する
             attachConnection(movingContent);
+            prev_left = "";
+            prev_top = "";
         }
         movingContent = "";
     };
 
     function editContent(value) {
-        if(mode != "edit" && mode != "move" && mode != "connect") return;
+        if(mode != "edit" && mode != "move" && mode != "connect" && mode != "delete") return;
         if(editingContent != "") {
             finishEditContent(editingContent);
         }
@@ -171,6 +200,8 @@
         else if(mode == "move") {
             if(movingContent == "") {
                 movingContent = value.id.substr(id_head.length);
+                prev_left = document.getElementById(id_head + movingContent).style.marginLeft;
+                prev_top = document.getElementById(id_head + movingContent).style.marginTop;
                 document.getElementById("registration_free_field").addEventListener("mousemove", moveContent);
                 document.getElementById("registration_free_field").addEventListener("click", putContent);
                 //このクリックで配置する際の関数が呼ばれるのを防止する
@@ -185,6 +216,7 @@
                 connect_begin_id = input_id;
                 value.style.borderColor = "red";
             }
+            //同じ要素を選択した場合、選択をキャンセル
             else if(connect_begin_id == input_id) {
                 connect_begin_id = "";
                 value.style.borderColor = "black";
@@ -201,7 +233,7 @@
                         break;
                     }
                     if(v in connect_relation) {
-                        connect_relation[v].forEach(function(next) {
+                        Object.keys(connect_relation[v]).forEach(function(next) {
                             if(!(next in searched_id)) {
                                 searched_id[next] = true;
                                 connection_search_queue.push(next);
@@ -212,23 +244,26 @@
                 if(check) {
                     alert("ループが生じるため、生成できません。\n接続を見直してください。");
                 }
-                else if(connect_begin_id in connect_relation) {
-                    connect_relation[connect_begin_id].forEach(function(v) {
-                        if(v == input_id) check = true;
-                    });
-                    if(check) {
-                        alert("このリンクは既に作成されています。");
+                //既に作成されているリンクの場合、削除を選択できる。
+                else if(connect_begin_id in connect_relation && input_id in connect_relation[connect_begin_id]) {
+                    if(window.confirm("このリンクは既に作成されています。削除しますか?")) {
+                        document.getElementById("connection_" + connect_begin_id + "_" + input_id).remove();
+                        document.getElementById("connection_" + connect_begin_id + "_" + input_id + "_form").remove();
+                        delete connect_relation[connect_begin_id][input_id];
+                        delete connect_relation_rev[input_id][connect_begin_id];
+                        document.getElementById(id_head + connect_begin_id).style.borderColor = "black";
+                        connect_begin_id = "";
                     }
                 }
-                if(!check) {
+                else {
                     if(!(connect_begin_id in connect_relation)) {
-                        connect_relation[connect_begin_id] = [];
+                        connect_relation[connect_begin_id] = {};
                     }
                     if(!(input_id in connect_relation_rev)) {
-                        connect_relation_rev[input_id] = [];
+                        connect_relation_rev[input_id] = {};
                     }
-                    connect_relation[connect_begin_id].push(input_id);
-                    connect_relation_rev[input_id].push(connect_begin_id);
+                    connect_relation[connect_begin_id][input_id] = true;
+                    connect_relation_rev[input_id][connect_begin_id] = true;
                     let newRelation = document.createElement("input");
                     newRelation.type = "hidden";
                     newRelation.name = "connection[][" + connect_begin_id + "][" + input_id + "]";
@@ -240,9 +275,12 @@
                     document.getElementById(id_head + connect_begin_id).style.borderColor = "black";
                     connect_begin_id = "";
                 }           
-
             }
-
+        }
+        else if(mode == "delete") {
+            if(window.confirm("この要素を削除します。\nよろしいですか?")) {
+                removeContentComplete(value.id.substr(id_head.length));
+            }
         }
     }
 
@@ -275,6 +313,23 @@
             }
             else if(mode == "edit") {
                 finishEditContent(editingContent);
+            }
+            else if(mode == "move") {
+                if(movingContent != "") {
+                    //復元する
+                    document.getElementById("registration_free_field").removeEventListener("mousemove", moveContent);
+                    document.getElementById("registration_free_field").removeEventListener("click", putContent);
+                    document.getElementById(id_head + movingContent).style.marginLeft  = prev_left;
+                    document.getElementById(id_head + movingContent).style.marginTop = prev_top;
+                    attachConnection(movingContent);
+                    movingContent = "";
+                }
+            }
+            else if(mode == "connect") {
+                if(connect_begin_id != "") {
+                    document.getElementById(id_head + connect_begin_id).style.borderColor = "black";
+                    connect_begin_id = "";
+                }
             }
         }
         mode = modeName;
