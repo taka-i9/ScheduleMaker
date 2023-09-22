@@ -52,3 +52,5 @@ Route::get('/home/workflow/new', function () {
 Route::post('/home/workflow/add', [App\Http\Controllers\WorkFlowController::class, 'add'])->name('workflow.add');
 
 Route::post('/home/workflow/edit', [App\Http\Controllers\WorkFlowController::class, 'edit_form'])->name('workflow.edit_form');
+
+Route::post('/home/workflow/update', [App\Http\Controllers\WorkFlowController::class, 'update'])->name('workflow.update');

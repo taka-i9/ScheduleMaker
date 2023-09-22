@@ -44,16 +44,17 @@
             </div>
         </div>
     </div>
-    <form method="post" name="workflow_data" id="workflow_data" action=""></form>
+    <form method="post" name="workflow_data" id="workflow_data" action="{{ route('workflow.update') }}">
+        @csrf
+    </form>
 </div>
 
 <script>
-    alert("{{ $workflow_id }}");
 
     var id_head = "field_content_";
     var mode = "";
     var editingContent = "";
-    var content_id = 1;
+    var content_id = {{ $contents_num + 1 }};
     var connect_begin_id = "";
     var connect_relation = {};
     var connect_relation_rev = {};
@@ -256,20 +257,7 @@
                     }
                 }
                 else {
-                    if(!(connect_begin_id in connect_relation)) {
-                        connect_relation[connect_begin_id] = {};
-                    }
-                    if(!(input_id in connect_relation_rev)) {
-                        connect_relation_rev[input_id] = {};
-                    }
-                    connect_relation[connect_begin_id][input_id] = true;
-                    connect_relation_rev[input_id][connect_begin_id] = true;
-                    let newRelation = document.createElement("input");
-                    newRelation.type = "hidden";
-                    newRelation.name = "connection[][" + connect_begin_id + "][" + input_id + "]";
-                    newRelation.id = "connection_" + connect_begin_id + "_" + input_id + "_form";
-                    newRelation.value = true;
-                    document.getElementById("workflow_data").appendChild(newRelation);
+                    createArrowForm(connect_begin_id, input_id);
                     //矢印を生成
                     createArrow(connect_begin_id, input_id);
                     document.getElementById(id_head + connect_begin_id).style.borderColor = "black";
@@ -336,33 +324,23 @@
         document.getElementById("registration_menu_" + mode).style.backgroundColor = "white";
         if(mode == "add") {
             movingContent = String(content_id);
-            let new_content = document.createElement("div");
-            new_content.className = "registration_free_field_content";
-            new_content.id = id_head + String(content_id);
-            new_content.style.marginLeft = "0px";
-            new_content.style.marginTop = "0px";
-            var func = "editContent(document.getElementById('"+ new_content.id +"'))";
-            new_content.setAttribute("onclick", func);
-            let new_content_title = document.createElement("div");
-            new_content_title.className = "divide_relative_field_2";
-            let new_content_title_value = document.createElement("div");;
-            new_content_title_value.className = "divide_relative_field_2_content";
-            new_content_title_value.id = id_head + String(content_id) + "_title";
-            new_content_title_value.innerHTML = "タイトル" + String(content_id);
-            new_content_title.appendChild(new_content_title_value);
-            new_content.appendChild(new_content_title);
-            let new_content_time = document.createElement("div");
-            new_content_time.className = "divide_relative_field_2";
-            let new_content_time_value = document.createElement("div");;
-            new_content_time_value.className = "divide_relative_field_2_content";
-            new_content_time_value.id = id_head + String(content_id) + "_time";
-            new_content_time_value.innerHTML = "<span id='" + id_head + String(content_id) + "_time_hour'>1</span>時間&nbsp;<span id='" + id_head + String(content_id) + "_time_minute'>0</span>分";
-            new_content_time.appendChild(new_content_time_value);
-            new_content.appendChild(new_content_time);
-            document.getElementById("registration_free_field").appendChild(new_content);
+            createContent(content_id, "タイトル" + String(content_id), "1", "0", "0px", "0px");
 
             document.getElementById("registration_free_field").addEventListener("mousemove", moveContent);
             document.getElementById("registration_free_field").addEventListener("click", putContent);
+        }
+        if(mode == "save") {
+            let contents_num_form = document.createElement("input");
+            contents_num_form.type = "hidden";
+            contents_num_form.name = "contents_num";
+            contents_num_form.value = content_id - 1;
+            document.getElementById("workflow_data").appendChild(contents_num_form);
+            let workflow_id_form = document.createElement("input");
+            workflow_id_form.type = "hidden";
+            workflow_id_form.name = "workflow_id";
+            workflow_id_form.value = {{ $workflow_id }};
+            document.getElementById("workflow_data").appendChild(workflow_id_form);
+            document.getElementById("workflow_data").submit();
         }
     }
 
@@ -379,6 +357,50 @@
         if(document.getElementById(value_id + "_time_input_minute").value == "") {
             document.getElementById(value_id + "_time_input_minute").value = 0;
         }
+    }
+
+    function createContent(id, title, time_hour, time_minute, margin_left, margin_top) {
+        let new_content = document.createElement("div");
+        new_content.className = "registration_free_field_content";
+        new_content.id = id_head + String(id);
+        new_content.style.marginLeft = margin_left;
+        new_content.style.marginTop = margin_top;
+        var func = "editContent(document.getElementById('"+ new_content.id +"'))";
+        new_content.setAttribute("onclick", func);
+        let new_content_title = document.createElement("div");
+        new_content_title.className = "divide_relative_field_2";
+        let new_content_title_value = document.createElement("div");;
+        new_content_title_value.className = "divide_relative_field_2_content";
+        new_content_title_value.id = id_head + String(id) + "_title";
+        new_content_title_value.innerHTML = title;
+        new_content_title.appendChild(new_content_title_value);
+        new_content.appendChild(new_content_title);
+        let new_content_time = document.createElement("div");
+        new_content_time.className = "divide_relative_field_2";
+        let new_content_time_value = document.createElement("div");;
+        new_content_time_value.className = "divide_relative_field_2_content";
+        new_content_time_value.id = id_head + String(id) + "_time";
+        new_content_time_value.innerHTML = "<span id='" + id_head + String(id) + "_time_hour'>" + time_hour + "</span>時間&nbsp;<span id='" + id_head + String(id) + "_time_minute'>" + time_minute + "</span>分";
+        new_content_time.appendChild(new_content_time_value);
+        new_content.appendChild(new_content_time);
+        document.getElementById("registration_free_field").appendChild(new_content);
+    }
+
+    function createArrowForm(start, end) {
+        if(!(start in connect_relation)) {
+            connect_relation[start] = {};
+        }
+        if(!(end in connect_relation_rev)) {
+            connect_relation_rev[end] = {};
+        }
+        connect_relation[start][end] = true;
+        connect_relation_rev[end][start] = true;
+        let newRelation = document.createElement("input");
+        newRelation.type = "hidden";
+        newRelation.name = "connection[" + start + "][" + end + "]";
+        newRelation.id = "connection_" + start + "_" + end + "_form";
+        newRelation.value = true;
+        document.getElementById("workflow_data").appendChild(newRelation);
     }
 
     function createArrow(start, end) {
@@ -437,6 +459,38 @@
         document.getElementById("registration_free_field").appendChild(newArrow);
         //矢印の始点と終点について、明示的に示す必要がある
     }
+
+    if({{ $contents_num }} != "0") {
+        let contents_ids = [<?php 
+            foreach($contents_data as $id => $content) {
+                print '"'.$id.'",'; 
+                foreach($content as $key => $value) {
+                    print '"'.$value.'",';
+                }
+            } 
+        ?>];
+        for(let i = 0; i < contents_ids.length / 6; i++) {
+            createContent(contents_ids[6 * i], contents_ids[6 * i + 1], contents_ids[6 * i + 2], contents_ids[6 * i + 3], contents_ids[6 * i + 4], contents_ids[6 * i + 5]);
+            addForm(contents_ids[6 * i]);
+        }
+        let connections = [<?php 
+            foreach($connection as $start => $ends) {
+                foreach(array_keys($ends) as $end) {
+                    print '"'.$start.'","'.$end.'",';
+                }
+            } 
+        ?>];
+        for(let i = 0; i < connections.length / 2; i++) {
+            createArrow(connections[2 * i], connections[2 * i + 1]);
+            createArrowForm(connections[2 * i], connections[2 * i + 1]);
+        }
+    }
+
+    window.onload = function() {
+        if({{ $updated }}) {
+            alert("保存しました。");
+        }
+    };
 
 </script>
 

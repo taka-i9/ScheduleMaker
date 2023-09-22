@@ -14,6 +14,7 @@ class WorkFlow extends Model
         'name',
         'deadline',
         'memo',
+        'contents_num',
         'tag1_id',
         'tag2_id',
         'tag3_id',
@@ -22,5 +23,6 @@ class WorkFlow extends Model
 
     protected $casts = [
         'deadline' => 'datetime',
+        'contents_num' => 'integer',
     ];
 }

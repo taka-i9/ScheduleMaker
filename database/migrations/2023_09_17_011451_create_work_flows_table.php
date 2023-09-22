@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('name');
             $table->dateTime('deadline');
             $table->string('memo')->nullable();
+            $table->integer('contents_num')->default(0);
             $table->unsignedBigInteger('tag1_id')->nullable();
             $table->unsignedBigInteger('tag2_id')->nullable();
             $table->unsignedBigInteger('tag3_id')->nullable();
