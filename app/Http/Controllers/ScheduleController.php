@@ -11,7 +11,60 @@ class ScheduleController extends Controller
         $this->middleware('auth');
     }
 
-    
+    public function list(Request $request) {
+        
+        if(!$request->has('status')) {
+            $request->merge(['status' => 'normal', 'display_style' =>'from_now' ]);
+        }
+
+        $schedule_data = array();
+        $data = Schedule::select(['id', 'name', 'begin_time', 'end_time'])->where('user_id', \Auth::user()->id)->where('status', $request->status);
+        if($request->status == "normal") {
+            if($request->display_style == 'from_now') {
+                $now = date('Y-m-d H:i:s');
+                $data = $data->where('begin_time', '>=', $now);
+            }
+            else if($request->display_style != 'all') {
+                $begin = new \DateTimeImmutable($request->begin." 0:00:00");
+                $end = new \DateTimeImmutable($request->end." 0:00:00");
+                $end = $end->modify("+1 day");
+                $data = $data->where('begin_time', '>=', $begin)->where('begin_time', '<', $end);
+            }
+            $data = $data->orderBy('begin_time')->get();
+
+            foreach($data as $value) {
+                array_push($schedule_data, [
+                    'id' => $value->id,
+                    'name' => $value->name,
+                    'begin_time' => $value->begin_time,
+                    'end_time' => $value->end_time,
+                ]);
+            }
+        }
+        else if($request->status == "repetition") {
+
+        }
+        else if($request->status == "template") {
+
+        }
+
+        if(!$request->has('begin')) {
+            $request->merge(['begin' => date('Y-m-d')]);
+        }
+        else {
+            $request->begin = new \DateTimeImmutable($request->begin);
+            $request->begin = $request->begin->format('Y-m-d');
+        }
+        if(!$request->has('end')) {
+            $request->merge(['end' => date('Y-m-d')]);
+        }
+        else {
+            $request->end = new \DateTimeImmutable($request->end);
+            $request->end = $request->end->format('Y-m-d');
+        }
+
+        return view('scheduleListView', ['status' => $request->status, 'display_style' => $request->display_style, 'schedule_data' => $schedule_data, 'begin' => $request->begin, 'end' => $request->end]);
+    }
 
     public function add(Request $request) {
         if($request->input('begin_date')!=NULL && $request->input('begin_time')!=NULL) {

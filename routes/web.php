@@ -37,6 +37,10 @@ Route::get('/home/schedule/new', function () {
     return view('scheduleRegistrationForm');
 });
 
+Route::get('/home/schedule/list', [App\Http\Controllers\ScheduleController::class, 'list']);
+
+Route::post('/home/schedule/list', [App\Http\Controllers\ScheduleController::class, 'list'])->name('schedule.list');
+
 Route::post('/home/schedule/add', [App\Http\Controllers\ScheduleController::class, 'add'])->name('schedule.add');
 
 Route::get('/home/todo/new', function () {

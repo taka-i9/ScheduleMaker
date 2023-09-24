@@ -20,14 +20,9 @@
                 新規作成
             </div>
         </div>
-        <div class="menu_child schedule_content">
+        <div class="menu_child schedule_content" onclick="linkToScheduleList()">
             <div class="menu_child_content">
-                繰り返し管理
-            </div>
-        </div>
-        <div class="menu_child schedule_content">
-            <div class="menu_child_content">
-                テンプレート管理
+                編集・管理
             </div>
         </div>
         <div class="menu_parent" id="menu_todo" onclick="changeStateMenuChild('todo')">
@@ -40,14 +35,9 @@
                 新規作成
             </div>
         </div>
-        <div class="menu_child todo_content">
+        <div class="menu_child schedule_content">
             <div class="menu_child_content">
-                繰り返し管理
-            </div>
-        </div>
-        <div class="menu_child todo_content">
-            <div class="menu_child_content">
-                テンプレート管理
+                編集・管理
             </div>
         </div>
         <div class="menu_parent" id="menu_workfrow" onclick="changeStateMenuChild('workflow')">
@@ -62,7 +52,7 @@
         </div>
         <div class="menu_child workflow_content">
             <div class="menu_child_content">
-                管理・変更
+                編集・管理
             </div>
         </div>
         <div class="menu_parent" id="menu_representation" onclick="changeStateMenuChild('representation')">
@@ -114,7 +104,7 @@
 </div>
 
 <script>
-function changeStateMenu(){
+function changeStateMenu() {
     if(document.getElementById("home_menu").hidden){
         document.getElementById("home_menu").hidden = false;
         document.querySelector('.home_body').style.width = '55%';
@@ -125,7 +115,7 @@ function changeStateMenu(){
     }
 }
 
-function changeStateMenuChild(parentName){
+function changeStateMenuChild(parentName) {
     var className = parentName + "_content";
     var childList = document.getElementsByClassName(className);
     for(var i=0;i<childList.length;i++){
@@ -133,8 +123,12 @@ function changeStateMenuChild(parentName){
     }
 }
 
-function linkToScheduleRegistraion(){
+function linkToScheduleRegistraion() {
     location.href = "<?php echo(url('/home/schedule/new')); ?>";
+}
+
+function linkToScheduleList() {
+    location.href = "<?php echo(url('/home/schedule/list')) ?>";
 }
 
 function linkToToDoRegistraion() {
