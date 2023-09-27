@@ -44,7 +44,13 @@
             <input type="hidden" name="end" id="end">
         </form>
     </div>
-    <div class="view_form_content">
+    <div class="view_form_content" id="view_form_content">
+        <form method="post" id="form_detail" action="{{ route('schedule.detail') }}">
+            @csrf
+        </form>
+        <form method="post" id="form_delete" action="{{ route('schedule.delete') }}">
+            @csrf
+        </form>
     </div>
 
 </div>
@@ -59,10 +65,6 @@
             print '},';
         } 
     ?>];
-
-    for(let i = 0; i < schedule_data.length; i++) {
-        alert(schedule_data[i]['name']);
-    }
 
     window.onload = function() {
         document.getElementById('{{ $status }}' + '_view').checked = true;
@@ -81,6 +83,52 @@
         document.getElementById('custom_end').value = '{{ $end }}';
         changeCustomBegin();
         changeCustomEnd();
+        if('{{ $status }}' == 'normal') {
+            displayNormal('スケジュール名', '開始時刻', '終了時刻', '0');
+            for(let i = 0; i < schedule_data.length; i++) {
+                displayNormal(schedule_data[i]['name'], schedule_data[i]['begin_time'], schedule_data[i]['end_time'], schedule_data[i]['id']);
+            }
+        }
+        let detail_form_status = document.createElement('input');
+        detail_form_status.type = 'hidden';
+        detail_form_status.name = 'status';
+        detail_form_status.value = '{{ $status }}';
+        let detail_form_display_style = document.createElement('input');
+        detail_form_display_style.type = 'hidden';
+        detail_form_display_style.name = 'display_style';
+        detail_form_display_style.value = '{{ $display_style }}';
+        let detail_form_begin = document.createElement('input');
+        detail_form_begin.type = 'hidden';
+        detail_form_begin.name = 'begin';
+        detail_form_begin.value = '{{ $begin }}';
+        let detail_form_end = document.createElement('input');
+        detail_form_end.type = 'hidden';
+        detail_form_end.name = 'end';
+        detail_form_end.value = '{{ $end }}';
+        document.getElementById('form_detail').appendChild(detail_form_status);
+        document.getElementById('form_detail').appendChild(detail_form_display_style);
+        document.getElementById('form_detail').appendChild(detail_form_begin);
+        document.getElementById('form_detail').appendChild(detail_form_end);
+        let delete_form_status = document.createElement('input');
+        delete_form_status.type = 'hidden';
+        delete_form_status.name = 'status';
+        delete_form_status.value = '{{ $status }}';
+        let delete_form_display_style = document.createElement('input');
+        delete_form_display_style.type = 'hidden';
+        delete_form_display_style.name = 'display_style';
+        delete_form_display_style.value = '{{ $display_style }}';
+        let delete_form_begin = document.createElement('input');
+        delete_form_begin.type = 'hidden';
+        delete_form_begin.name = 'begin';
+        delete_form_begin.value = '{{ $begin }}';
+        let delete_form_end = document.createElement('input');
+        delete_form_end.type = 'hidden';
+        delete_form_end.name = 'end';
+        delete_form_end.value = '{{ $end }}';
+        document.getElementById('form_delete').appendChild(delete_form_status);
+        document.getElementById('form_delete').appendChild(delete_form_display_style);
+        document.getElementById('form_delete').appendChild(delete_form_begin);
+        document.getElementById('form_delete').appendChild(delete_form_end);
     };
     
 
@@ -159,6 +207,89 @@
         }
         if(document.getElementById('display_style').value == 'custom') {
             document.getElementById('end').value = document.getElementById('custom_end').value;
+        }
+    }
+
+    function displayNormal(name, begin_time, end_time, id) {
+        let content = document.createElement('div');
+        content.className = 'view_content';
+        let name_parent = document.createElement('div');
+        name_parent.className = 'view_schedule_contents_parent';
+        let name_child = document.createElement('div');
+        name_child.className = 'view_contents_child';
+        name_child.innerText = name;
+        name_parent.appendChild(name_child);
+        let begin_time_parent = document.createElement('div');
+        begin_time_parent.className = 'view_schedule_contents_parent';
+        let begin_time_child = document.createElement('div');
+        begin_time_child.className = 'view_contents_child';
+        begin_time_child.innerText = begin_time;
+        begin_time_parent.appendChild(begin_time_child);
+        let end_time_parent = document.createElement('div');
+        end_time_parent.className = 'view_schedule_contents_parent';
+        let end_time_child = document.createElement('div');
+        end_time_child.className = 'view_contents_child';
+        end_time_child.innerText = end_time;
+        end_time_parent.appendChild(end_time_child);
+        let detail_parent = document.createElement('div');
+        detail_parent.className = 'view_detail_parent';
+        let detail_child = document.createElement('div');
+        detail_child.className = 'view_contents_child';
+        if(id == '0') {
+            detail_child.innerText = '詳細';
+        }
+        else {
+            let detail_button = document.createElement('button');
+            detail_button.type = 'button';
+            detail_button.innerText = '詳細';
+            detail_button.addEventListener('click', (event) => {
+                showDetailSchedule(id);
+            });
+            detail_child.appendChild(detail_button);
+        }
+        detail_parent.appendChild(detail_child);
+        let delete_parent = document.createElement('div');
+        delete_parent.className = 'view_delete_parent';
+        let delete_child = document.createElement('div');
+        delete_child.className = 'view_contents_child';
+        if(id == '0') {
+            delete_child.innerText = '削除';
+        }
+        else {
+            let delete_button = document.createElement('button');
+            delete_button.type = 'button';
+            delete_button.innerText = '削除';
+            delete_button.addEventListener('click', (event) => {
+                deleteSchedule(id);
+            });
+            delete_child.appendChild(delete_button);
+        }
+        delete_parent.appendChild(delete_child);
+        content.appendChild(name_parent);
+        content.appendChild(begin_time_parent);
+        content.appendChild(end_time_parent);
+        content.appendChild(detail_parent);
+        content.appendChild(delete_parent);
+        document.getElementById('view_form_content').appendChild(content);
+    }
+
+    function showDetailSchedule(id) {
+        let detail_form_id = document.createElement('input');
+        detail_form_id.type = 'hidden';
+        detail_form_id.name = 'id';
+        detail_form_id.value = id;
+        document.getElementById('form_detail').appendChild(detail_form_id);
+        document.getElementById('form_detail').submit();
+    }
+
+    function deleteSchedule(id) {
+        if(window.confirm('この要素を削除します。\nよろしいですか。')) {
+            let detail_form_id = document.createElement('input');
+            detail_form_id.type = 'hidden';
+            detail_form_id.name = 'id';
+            detail_form_id.value = id;
+            document.getElementById('form_detail').appendChild(detail_form_id);
+            alert(id);
         }
     }
 </script>

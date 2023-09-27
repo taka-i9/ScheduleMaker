@@ -173,4 +173,26 @@ class ScheduleController extends Controller
         return view('scheduleRegistrationComplete');
         
     }
+
+    public function detail(Request $request) {
+        if($request->status == 'normal') {
+            $data = Schedule::select(['id', 'name', 'begin_time', 'end_time', 'memo', 'is_duplecation', 'color'])->where('id', $request->id)->first();
+            $data = [
+                'id' => $data->id,
+                'name' => $data->name,
+                'begin_time' => $data->begin_time,
+                'end_time' => $data->end_time,
+                'memo' => $data->memo,
+                'is_duplecation' => $data->is_duplication,
+                'color' => $data->color,
+            ];
+            return view('scheduleDetailNormal', ['status' => $request->status, 'display_style' => $request->display_style, 'begin' => $request->begin, 'end' => $request->end, 'data' => $data]);
+        }
+        else if($request->status == 'repetition') {
+
+        }
+        else if($request->status == 'template') {
+
+        }
+    }
 }

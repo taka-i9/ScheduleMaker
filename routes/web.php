@@ -43,6 +43,10 @@ Route::post('/home/schedule/list', [App\Http\Controllers\ScheduleController::cla
 
 Route::post('/home/schedule/add', [App\Http\Controllers\ScheduleController::class, 'add'])->name('schedule.add');
 
+Route::post('/home/schedule/detail', [App\Http\Controllers\ScheduleController::class, 'detail'])->name('schedule.detail');
+
+Route::post('/home/schedule/delete', [App\Http\Controllers\ScheduleController::class, 'delete'])->name('schedule.delete');
+
 Route::get('/home/todo/new', function () {
     return view('todoRegistrationForm');
 });
