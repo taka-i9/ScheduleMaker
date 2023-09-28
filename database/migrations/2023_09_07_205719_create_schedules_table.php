@@ -26,7 +26,7 @@ return new class extends Migration
             $table->unsignedBigInteger('tag3_id')->nullable();
             $table->boolean('is_set_alerm')->default(false);
             $table->dateTime('alerm_time')->nullable();
-            $table->boolean('is_duplecation')->default(false);
+            $table->boolean('is_duplication')->default(false);
             $table->string('color');
             $table->string('template_name')->nullable();
             $table->timestamps();

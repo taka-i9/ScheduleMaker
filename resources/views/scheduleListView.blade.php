@@ -38,10 +38,10 @@
                 ~
                 <input type="date" id="custom_end" onchange="changeCustomEnd()">
             </div>
-            <input type="hidden" name="status" id="status">
-            <input type="hidden" name="display_style" id="display_style" value="from_now">
-            <input type="hidden" name="begin" id="begin">
-            <input type="hidden" name="end" id="end">
+            <input type="hidden" name="list_status" id="list_status">
+            <input type="hidden" name="list_display_style" id="list_display_style" value="from_now">
+            <input type="hidden" name="list_begin" id="list_begin">
+            <input type="hidden" name="list_end" id="list_end">
         </form>
     </div>
     <div class="view_form_content" id="view_form_content">
@@ -67,23 +67,23 @@
     ?>];
 
     window.onload = function() {
-        document.getElementById('{{ $status }}' + '_view').checked = true;
-        document.getElementById('status').value = '{{ $status }}';
-        document.getElementById('{{ $display_style }}').checked = true;
-        if('{{ $status }}' == 'normal') {
+        document.getElementById('{{ $list_status }}' + '_view').checked = true;
+        document.getElementById('list_status').value = '{{ $list_status }}';
+        document.getElementById('{{ $list_display_style }}').checked = true;
+        if('{{ $list_status }}' == 'normal') {
             document.getElementById('detail_normal').hidden = false;
-            document.getElementById('display_style').value = '{{ $display_style }}';
-            if('{{ $display_style }}' == 'custom') {
+            document.getElementById('list_display_style').value = '{{ $list_display_style }}';
+            if('{{ $list_display_style }}' == 'custom') {
                 document.getElementById('detail_custom').hidden = false;    
             }
         }
-        document.getElementById('begin').value = '{{ $begin }}';
-        document.getElementById('end').value = '{{ $end }}';
-        document.getElementById('custom_begin').value = '{{ $begin }}';
-        document.getElementById('custom_end').value = '{{ $end }}';
+        document.getElementById('list_begin').value = '{{ $list_begin }}';
+        document.getElementById('list_end').value = '{{ $list_end }}';
+        document.getElementById('custom_begin').value = '{{ $list_begin }}';
+        document.getElementById('custom_end').value = '{{ $list_end }}';
         changeCustomBegin();
         changeCustomEnd();
-        if('{{ $status }}' == 'normal') {
+        if('{{ $list_status }}' == 'normal') {
             displayNormal('スケジュール名', '開始時刻', '終了時刻', '0');
             for(let i = 0; i < schedule_data.length; i++) {
                 displayNormal(schedule_data[i]['name'], schedule_data[i]['begin_time'], schedule_data[i]['end_time'], schedule_data[i]['id']);
@@ -91,40 +91,40 @@
         }
         let detail_form_status = document.createElement('input');
         detail_form_status.type = 'hidden';
-        detail_form_status.name = 'status';
-        detail_form_status.value = '{{ $status }}';
+        detail_form_status.name = 'list_status';
+        detail_form_status.value = '{{ $list_status }}';
         let detail_form_display_style = document.createElement('input');
         detail_form_display_style.type = 'hidden';
-        detail_form_display_style.name = 'display_style';
-        detail_form_display_style.value = '{{ $display_style }}';
+        detail_form_display_style.name = 'list_display_style';
+        detail_form_display_style.value = '{{ $list_display_style }}';
         let detail_form_begin = document.createElement('input');
         detail_form_begin.type = 'hidden';
-        detail_form_begin.name = 'begin';
-        detail_form_begin.value = '{{ $begin }}';
+        detail_form_begin.name = 'list_begin';
+        detail_form_begin.value = '{{ $list_begin }}';
         let detail_form_end = document.createElement('input');
         detail_form_end.type = 'hidden';
-        detail_form_end.name = 'end';
-        detail_form_end.value = '{{ $end }}';
+        detail_form_end.name = 'list_end';
+        detail_form_end.value = '{{ $list_end }}';
         document.getElementById('form_detail').appendChild(detail_form_status);
         document.getElementById('form_detail').appendChild(detail_form_display_style);
         document.getElementById('form_detail').appendChild(detail_form_begin);
         document.getElementById('form_detail').appendChild(detail_form_end);
         let delete_form_status = document.createElement('input');
         delete_form_status.type = 'hidden';
-        delete_form_status.name = 'status';
-        delete_form_status.value = '{{ $status }}';
+        delete_form_status.name = 'list_status';
+        delete_form_status.value = '{{ $list_status }}';
         let delete_form_display_style = document.createElement('input');
         delete_form_display_style.type = 'hidden';
-        delete_form_display_style.name = 'display_style';
-        delete_form_display_style.value = '{{ $display_style }}';
+        delete_form_display_style.name = 'list_display_style';
+        delete_form_display_style.value = '{{ $list_display_style }}';
         let delete_form_begin = document.createElement('input');
         delete_form_begin.type = 'hidden';
-        delete_form_begin.name = 'begin';
-        delete_form_begin.value = '{{ $begin }}';
+        delete_form_begin.name = 'list_begin';
+        delete_form_begin.value = '{{ $list_begin }}';
         let delete_form_end = document.createElement('input');
         delete_form_end.type = 'hidden';
-        delete_form_end.name = 'end';
-        delete_form_end.value = '{{ $end }}';
+        delete_form_end.name = 'list_end';
+        delete_form_end.value = '{{ $list_end }}';
         document.getElementById('form_delete').appendChild(delete_form_status);
         document.getElementById('form_delete').appendChild(delete_form_display_style);
         document.getElementById('form_delete').appendChild(delete_form_begin);
@@ -133,20 +133,20 @@
     
 
     function changeStatus(type) {
-        let status = document.getElementById('status');
-        let prev = document.getElementById(status.value + '_view');
-        if(status.value == type) return;
+        let list_status = document.getElementById('list_status');
+        let prev = document.getElementById(list_status.value + '_view');
+        if(list_status.value == type) return;
         prev.checked = false;
-        if(status.value == 'normal') {
+        if(list_status.value == 'normal') {
             document.getElementById('detail_normal').hidden = true;
             document.getElementById('detail_custom').hidden = true;
         }
-        else if(status.value == 'repetition') {
+        else if(list_status.value == 'repetition') {
         }
-        status.value = type;
+        list_status.value = type;
         if(type == 'normal') {
             document.getElementById('detail_normal').hidden = false;
-            if(document.getElementById('display_style').value == 'custom'){
+            if(document.getElementById('list_display_style').value == 'custom'){
                 document.getElementById('detail_custom').hidden = false;
             }
         }
@@ -159,16 +159,16 @@
     }
 
     function changeDisplayStyle(type) {
-        let display_style = document.getElementById('display_style');
-        let prev = document.getElementById(display_style.value);
-        let begin = document.getElementById('begin');
-        let end = document.getElementById('end');
-        if(display_style.value == type) return;
+        let list_display_style = document.getElementById('list_display_style');
+        let prev = document.getElementById(list_display_style.value);
+        let list_begin = document.getElementById('list_begin');
+        let list_end = document.getElementById('list_end');
+        if(list_display_style.value == type) return;
         prev.checked = false;
-        if(display_style.value == 'custom') {
+        if(list_display_style.value == 'custom') {
             document.getElementById('detail_custom').hidden = true;
         }
-        display_style.value = type;
+        list_display_style.value = type;
         let today = new Date();
         let begin_date = new Date();
         let end_date = new Date();
@@ -186,8 +186,8 @@
             end_date = new Date(document.getElementById('custom_end').value);
             document.getElementById('detail_custom').hidden = false;
         }
-        begin.value = display_date(begin_date);
-        end.value = display_date(end_date);
+        list_begin.value = display_date(begin_date);
+        list_end.value = display_date(end_date);
     }
 
     function changeCustomBegin() {
@@ -195,8 +195,8 @@
         if(new Date(document.getElementById('custom_end').min) > new Date(document.getElementById('custom_end').value)) {
             document.getElementById('custom_end').value = document.getElementById('custom_end').min;
         }
-        if(document.getElementById('display_style').value == 'custom') {
-            document.getElementById('begin').value = document.getElementById('custom_begin').value;
+        if(document.getElementById('list_display_style').value == 'custom') {
+            document.getElementById('list_begin').value = document.getElementById('custom_begin').value;
         }
     }
 
@@ -205,8 +205,8 @@
         if(new Date(document.getElementById('custom_begin').max) < new Date(document.getElementById('custom_begin').value)) {
             document.getElementById('custom_begin').value = document.getElementById('custom_begin').max;
         }
-        if(document.getElementById('display_style').value == 'custom') {
-            document.getElementById('end').value = document.getElementById('custom_end').value;
+        if(document.getElementById('list_display_style').value == 'custom') {
+            document.getElementById('list_end').value = document.getElementById('custom_end').value;
         }
     }
 

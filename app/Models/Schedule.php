@@ -23,7 +23,7 @@ class Schedule extends Model
         'tag3_id',
         'is_set_alerm',
         'alerm_time',
-        'is_duplecation',
+        'is_duplication',
         'color',
         'template_name',
     ];
@@ -35,6 +35,6 @@ class Schedule extends Model
         'elapsed_days' => 'integer',
         'is_set_alerm' => 'boolean',
         'alerm_time' => 'datetime',
-        'is_duplecation' => 'boolean',
+        'is_duplication' => 'boolean',
     ];
 }

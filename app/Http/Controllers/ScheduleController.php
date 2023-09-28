@@ -13,20 +13,20 @@ class ScheduleController extends Controller
 
     public function list(Request $request) {
         
-        if(!$request->has('status')) {
-            $request->merge(['status' => 'normal', 'display_style' =>'from_now' ]);
+        if(!$request->has('list_status')) {
+            $request->merge(['list_status' => 'normal', 'list_display_style' =>'from_now' ]);
         }
 
         $schedule_data = array();
-        $data = Schedule::select(['id', 'name', 'begin_time', 'end_time'])->where('user_id', \Auth::user()->id)->where('status', $request->status);
-        if($request->status == "normal") {
-            if($request->display_style == 'from_now') {
+        $data = Schedule::select(['id', 'name', 'begin_time', 'end_time'])->where('user_id', \Auth::user()->id)->where('status', $request->list_status);
+        if($request->list_status == "normal") {
+            if($request->list_display_style == 'from_now') {
                 $now = date('Y-m-d H:i:s');
                 $data = $data->where('begin_time', '>=', $now);
             }
-            else if($request->display_style != 'all') {
-                $begin = new \DateTimeImmutable($request->begin." 0:00:00");
-                $end = new \DateTimeImmutable($request->end." 0:00:00");
+            else if($request->list_display_style != 'all') {
+                $begin = new \DateTimeImmutable($request->list_begin." 0:00:00");
+                $end = new \DateTimeImmutable($request->list_end." 0:00:00");
                 $end = $end->modify("+1 day");
                 $data = $data->where('begin_time', '>=', $begin)->where('begin_time', '<', $end);
             }
@@ -41,29 +41,54 @@ class ScheduleController extends Controller
                 ]);
             }
         }
-        else if($request->status == "repetition") {
+        else if($request->list_status == "repetition") {
 
         }
-        else if($request->status == "template") {
+        else if($request->list_status == "template") {
 
         }
 
-        if(!$request->has('begin')) {
-            $request->merge(['begin' => date('Y-m-d')]);
+        if(!$request->has('list_begin')) {
+            $request->merge(['list_begin' => date('Y-m-d')]);
         }
         else {
-            $request->begin = new \DateTimeImmutable($request->begin);
-            $request->begin = $request->begin->format('Y-m-d');
+            $request->list_begin = new \DateTimeImmutable($request->list_begin);
+            $request->list_begin = $request->list_begin->format('Y-m-d');
         }
-        if(!$request->has('end')) {
-            $request->merge(['end' => date('Y-m-d')]);
+        if(!$request->has('list_end')) {
+            $request->merge(['list_end' => date('Y-m-d')]);
         }
         else {
-            $request->end = new \DateTimeImmutable($request->end);
-            $request->end = $request->end->format('Y-m-d');
+            $request->list_end = new \DateTimeImmutable($request->list_end);
+            $request->list_end = $request->list_end->format('Y-m-d');
         }
 
-        return view('scheduleListView', ['status' => $request->status, 'display_style' => $request->display_style, 'schedule_data' => $schedule_data, 'begin' => $request->begin, 'end' => $request->end]);
+        return view('scheduleListView', ['list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'schedule_data' => $schedule_data, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end]);
+    }
+
+    public function detail(Request $request) {
+        if(!$request->has('updated')) {
+            $request->merge(['updated' => '']);
+        }
+        if($request->list_status == 'normal') {
+            $data = Schedule::select(['id', 'name', 'begin_time', 'end_time', 'memo', 'is_duplication', 'color'])->where('id', $request->id)->first();
+            $data = [
+                'id' => $data->id,
+                'name' => $data->name,
+                'begin_time' => $data->begin_time,
+                'end_time' => $data->end_time,
+                'memo' => $data->memo,
+                'is_duplication' => $data->is_duplication,
+                'color' => $data->color,
+            ];
+            return view('scheduleDetailNormal', ['list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'data' => $data, 'updated' => $request->updated]);
+        }
+        else if($request->list_status == 'repetition') {
+
+        }
+        else if($request->list_status == 'template') {
+
+        }
     }
 
     public function add(Request $request) {
@@ -91,6 +116,10 @@ class ScheduleController extends Controller
             $request->merge([ 'time_comparison' => NULL ]);
         }
 
+        if(!$request->has('template_name')) {
+            $request->merge([ 'template_name' => '' ]);
+        }
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'begin' => ['required'],
@@ -115,84 +144,96 @@ class ScheduleController extends Controller
             $repetition_state = 127;
         }
 
-        if($request->input('is_duplecation') == NULL) $is_duplication = false;
+        if($request->input('is_duplication') == NULL) $is_duplication = false;
         else $is_duplication = true;
 
-        if($request->input("is_repetition") || $request->input("is_template")) {
-            $elapsed_days = (int)date_create(date_format($begin, 'Y-m-d'))->diff(date_create(date_format($end, 'Y-m-d')))->format('%a');
+        //新規登録の場合
+        if(!$request->has('id')) {
 
-            //繰り返しとして登録する場合
-            if($request->input("is_repetition")) {
+            if($request->input("is_repetition") || $request->input("is_template")) {
+                $elapsed_days = (int)date_create(date_format($begin, 'Y-m-d'))->diff(date_create(date_format($end, 'Y-m-d')))->format('%a');
+
+                //繰り返しとして登録する場合
+                if($request->input("is_repetition")) {
+                    Schedule::create([
+                        'user_id' => \Auth::user()->id,
+                        'status' => 'repetition',
+                        'name' => $request->input('name'),
+                        'begin_time' => $begin,
+                        'end_time' => $end,
+                        'repetition_state' => $repetition_state,
+                        'elapsed_days' => $elapsed_days,
+                        'memo' => $request->input('memo'),
+                        'is_duplication' => $is_duplication,
+                        'color' => $request->input('color'),
+                    ]);
+                }
+
+                //テンプレートとして登録する場合
+                if($request->input("is_template")) {
+                    Schedule::create([
+                        'user_id' => \Auth::user()->id,
+                        'status' => 'template',
+                        'name' => $request->input('name'),
+                        'begin_time' => $begin,
+                        'end_time' => $end,
+                        'repetition_state' => $repetition_state,
+                        'elapsed_days' => $elapsed_days,
+                        'memo' => $request->input('memo'),
+                        'is_duplication' => $is_duplication,
+                        'color' => $request->input('color'),
+                        'template_name' => $request->input('template_name'),
+                    ]);
+                }
+            }
+
+            //通常のスケジュールとして登録する場合
+            else {
                 Schedule::create([
                     'user_id' => \Auth::user()->id,
-                    'status' => 'repetition',
+                    'status' => 'normal',
                     'name' => $request->input('name'),
                     'begin_time' => $begin,
                     'end_time' => $end,
                     'repetition_state' => $repetition_state,
-                    'elapsed_days' => $elapsed_days,
                     'memo' => $request->input('memo'),
-                    'is_duplecation' => $is_duplication,
+                    'is_duplication' => $is_duplication,
                     'color' => $request->input('color'),
                 ]);
             }
 
-            //テンプレートとして登録する場合
-            if($request->input("is_template")) {
-                Schedule::create([
-                    'user_id' => \Auth::user()->id,
-                    'status' => 'template',
-                    'name' => $request->input('name'),
-                    'begin_time' => $begin,
-                    'end_time' => $end,
-                    'repetition_state' => $repetition_state,
-                    'elapsed_days' => $elapsed_days,
-                    'memo' => $request->input('memo'),
-                    'is_duplecation' => $is_duplication,
-                    'color' => $request->input('color'),
-                    'template_name' => $request->input('template_name'),
-                ]);
-            }
+            return view('scheduleRegistrationComplete');
         }
-
-        //通常のスケジュールとして登録する場合
+        //更新の場合
         else {
-            Schedule::create([
-                'user_id' => \Auth::user()->id,
-                'status' => 'normal',
-                'name' => $request->input('name'),
-                'begin_time' => $begin,
-                'end_time' => $end,
-                'repetition_state' => $repetition_state,
-                'memo' => $request->input('memo'),
-                'is_duplecation' => $is_duplication,
-                'color' => $request->input('color'),
-            ]);
-        }
+            $content = Schedule::where('user_id', \Auth::user()->id)->where('id', $request->id)->first();
+            if($request->list_status == 'normal') {
+                $content->name = $request->name;
+                $content->begin_time = $begin;
+                $content->end_time = $end;
+                $content->memo = $request->memo;
+                $content->is_duplication = $is_duplication;
+                $content->color = $request->color;
+                $content->save();
+                $request->merge(['updated' => true]);
+                $data = Schedule::select(['id', 'name', 'begin_time', 'end_time', 'memo', 'is_duplication', 'color'])->where('id', $request->id)->first();
+                $data = [
+                    'id' => $data->id,
+                    'name' => $data->name,
+                    'begin_time' => $data->begin_time,
+                    'end_time' => $data->end_time,
+                    'memo' => $data->memo,
+                    'is_duplication' => $data->is_duplication,
+                    'color' => $data->color,
+                ];
+                return view('scheduleDetailNormal', ['list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'data' => $data, 'updated' => $request->updated]);
+            }
+            else if($request->list_status == 'repetition') {
 
-        return view('scheduleRegistrationComplete');
-        
-    }
-
-    public function detail(Request $request) {
-        if($request->status == 'normal') {
-            $data = Schedule::select(['id', 'name', 'begin_time', 'end_time', 'memo', 'is_duplecation', 'color'])->where('id', $request->id)->first();
-            $data = [
-                'id' => $data->id,
-                'name' => $data->name,
-                'begin_time' => $data->begin_time,
-                'end_time' => $data->end_time,
-                'memo' => $data->memo,
-                'is_duplecation' => $data->is_duplication,
-                'color' => $data->color,
-            ];
-            return view('scheduleDetailNormal', ['status' => $request->status, 'display_style' => $request->display_style, 'begin' => $request->begin, 'end' => $request->end, 'data' => $data]);
-        }
-        else if($request->status == 'repetition') {
-
-        }
-        else if($request->status == 'template') {
-
+            }
+            else if($request->list_status == 'template') {
+    
+            }
         }
     }
 }

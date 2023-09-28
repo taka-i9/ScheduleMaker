@@ -185,7 +185,7 @@
                 </div>
                 <div class="form_element_input_no_error">
                     <div class="form_element_value">
-                        <input type="checkbox" name="is_duplecation" class="form_element_checkbox" {{ old('is_duplecation') == 'on' ? 'checked' : '' }}>
+                        <input type="checkbox" name="is_duplication" class="form_element_checkbox" {{ old('is_duplication') == 'on' ? 'checked' : '' }}>
                     </div>
                 </div>
             </div>
