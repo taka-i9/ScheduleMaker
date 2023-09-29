@@ -11,22 +11,17 @@ class ScheduleController extends Controller
         $this->middleware('auth');
     }
 
-    public function list(Request $request) {
-        
-        if(!$request->has('list_status')) {
-            $request->merge(['list_status' => 'normal', 'list_display_style' =>'from_now' ]);
-        }
-
+    function getScheduleData($list_status, $list_display_style, $list_begin, $list_end) {
         $schedule_data = array();
-        $data = Schedule::select(['id', 'name', 'begin_time', 'end_time'])->where('user_id', \Auth::user()->id)->where('status', $request->list_status);
-        if($request->list_status == "normal") {
-            if($request->list_display_style == 'from_now') {
+        $data = Schedule::select(['id', 'name', 'begin_time', 'end_time'])->where('user_id', \Auth::user()->id)->where('status', $list_status);
+        if($list_status == "normal") {
+            if($list_display_style == 'from_now') {
                 $now = date('Y-m-d H:i:s');
                 $data = $data->where('begin_time', '>=', $now);
             }
-            else if($request->list_display_style != 'all') {
-                $begin = new \DateTimeImmutable($request->list_begin." 0:00:00");
-                $end = new \DateTimeImmutable($request->list_end." 0:00:00");
+            else if($list_display_style != 'all') {
+                $begin = new \DateTimeImmutable($list_begin." 0:00:00");
+                $end = new \DateTimeImmutable($list_end." 0:00:00");
                 $end = $end->modify("+1 day");
                 $data = $data->where('begin_time', '>=', $begin)->where('begin_time', '<', $end);
             }
@@ -41,12 +36,25 @@ class ScheduleController extends Controller
                 ]);
             }
         }
-        else if($request->list_status == "repetition") {
+        else if($list_status == "repetition") {
 
         }
-        else if($request->list_status == "template") {
+        else if($list_status == "template") {
 
         }
+        return $schedule_data;
+    }
+
+    public function list(Request $request) {
+        
+        if(!$request->has('list_status')) {
+            $request->merge(['list_status' => 'normal', 'list_display_style' =>'from_now' ]);
+        }
+        if(!$request->has('deleted')) {
+            $request->merge(['deleted' => '']);
+        }
+
+        $schedule_data = self::getScheduleData($request->list_status, $request->list_display_style, $request->list_begin, $request->list_end);
 
         if(!$request->has('list_begin')) {
             $request->merge(['list_begin' => date('Y-m-d')]);
@@ -63,7 +71,7 @@ class ScheduleController extends Controller
             $request->list_end = $request->list_end->format('Y-m-d');
         }
 
-        return view('scheduleListView', ['list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'schedule_data' => $schedule_data, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end]);
+        return view('scheduleListView', ['list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'schedule_data' => $schedule_data, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'deleted' => $request->deleted]);
     }
 
     public function detail(Request $request) {
@@ -71,7 +79,7 @@ class ScheduleController extends Controller
             $request->merge(['updated' => '']);
         }
         if($request->list_status == 'normal') {
-            $data = Schedule::select(['id', 'name', 'begin_time', 'end_time', 'memo', 'is_duplication', 'color'])->where('id', $request->id)->first();
+            $data = Schedule::select(['id', 'name', 'begin_time', 'end_time', 'memo', 'is_duplication', 'color'])->where('user_id', \Auth::user()->id)->where('id', $request->id)->first();
             $data = [
                 'id' => $data->id,
                 'name' => $data->name,
@@ -93,7 +101,7 @@ class ScheduleController extends Controller
 
     public function edit(Request $request) {
         if($request->list_status == 'normal') {
-            $data = Schedule::select(['id', 'name', 'begin_time', 'end_time', 'memo', 'is_duplication', 'color'])->where('id', $request->id)->first();
+            $data = Schedule::select(['id', 'name', 'begin_time', 'end_time', 'memo', 'is_duplication', 'color'])->where('user_id', \Auth::user()->id)->where('id', $request->id)->first();
             $data = [
                 'id' => $data->id,
                 'name' => $data->name,
@@ -111,6 +119,13 @@ class ScheduleController extends Controller
         else if($request->list_status == 'template') {
 
         }
+    }
+
+    public function delete(Request $request) {
+        Schedule::where('user_id', \Auth::user()->id)->where('id', $request->id)->delete();
+        $request->merge([ 'deleted' => true ]);
+        $schedule_data = self::getScheduleData($request->list_status, $request->list_display_style, $request->list_begin, $request->list_end);
+        return redirect(route('schedule.list', ['list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'deleted' => $request->deleted]));
     }
 
     public function add(Request $request) {
@@ -238,17 +253,7 @@ class ScheduleController extends Controller
                 $content->color = $request->color;
                 $content->save();
                 $request->merge(['updated' => true]);
-                $data = Schedule::select(['id', 'name', 'begin_time', 'end_time', 'memo', 'is_duplication', 'color'])->where('id', $request->id)->first();
-                $data = [
-                    'id' => $data->id,
-                    'name' => $data->name,
-                    'begin_time' => $data->begin_time,
-                    'end_time' => $data->end_time,
-                    'memo' => $data->memo,
-                    'is_duplication' => $data->is_duplication,
-                    'color' => $data->color,
-                ];
-                return view('scheduleDetailNormal', ['list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'data' => $data, 'updated' => $request->updated]);
+                return redirect(route('schedule.detail', ['id' => $request->id, 'list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'updated' => $request->updated]));
             }
             else if($request->list_status == 'repetition') {
 

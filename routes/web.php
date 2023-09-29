@@ -37,19 +37,13 @@ Route::get('/home/schedule/new', function () {
     return view('scheduleRegistrationForm');
 });
 
-Route::get('/home/schedule/list', [App\Http\Controllers\ScheduleController::class, 'list']);
-
-Route::post('/home/schedule/list', [App\Http\Controllers\ScheduleController::class, 'list'])->name('schedule.list');
+Route::get('/home/schedule/list', [App\Http\Controllers\ScheduleController::class, 'list'])->name('schedule.list');
 
 Route::post('/home/schedule/add', [App\Http\Controllers\ScheduleController::class, 'add'])->name('schedule.add');
 
-Route::post('/home/schedule/detail', [App\Http\Controllers\ScheduleController::class, 'detail'])->name('schedule.detail');
+//Route::post('/home/schedule/detail', [App\Http\Controllers\ScheduleController::class, 'detail'])->name('schedule.detail');
 
-Route::get('/home/schedule/detail', [App\Http\Controllers\ScheduleController::class, 'detail']);
-
-//Route::post('/home/schedule/edit', [App\Http\Controllers\ScheduleController::class, 'edit'])->name('schedule.edit');
-
-//Route::get('/home/schedule/edit', [App\Http\Controllers\ScheduleController::class, 'edit']);
+Route::get('/home/schedule/detail', [App\Http\Controllers\ScheduleController::class, 'detail'])->name('schedule.detail');
 
 Route::get('/home/schedule/edit', [App\Http\Controllers\ScheduleController::class, 'edit'])->name('schedule.edit');
 

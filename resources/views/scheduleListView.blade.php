@@ -9,8 +9,7 @@
         </div>
     </div>
     <div class="view_form_edit">
-        <form method="post" action="{{ route('schedule.list') }}">
-            @csrf
+        <form method="get" id="list_setting" action="{{ route('schedule.list') }}">
             <div style="display: flex;">
                 <input type="checkbox" id="normal_view" onclick="changeStatus('normal')"><label for="normal_view">スケジュール</label>
                 &nbsp;
@@ -45,8 +44,7 @@
         </form>
     </div>
     <div class="view_form_content" id="view_form_content">
-        <form method="post" id="form_detail" action="{{ route('schedule.detail') }}">
-            @csrf
+        <form method="get" id="form_detail" action="{{ route('schedule.detail') }}">
         </form>
         <form method="post" id="form_delete" action="{{ route('schedule.delete') }}">
             @csrf
@@ -129,6 +127,11 @@
         document.getElementById('form_delete').appendChild(delete_form_display_style);
         document.getElementById('form_delete').appendChild(delete_form_begin);
         document.getElementById('form_delete').appendChild(delete_form_end);
+
+        if("{{ $deleted }}") {
+            alert("削除が完了しました。");
+            //document.getElementById('list_setting').submit();
+        }
     };
     
 
@@ -284,12 +287,12 @@
 
     function deleteSchedule(id) {
         if(window.confirm('この要素を削除します。\nよろしいですか。')) {
-            let detail_form_id = document.createElement('input');
-            detail_form_id.type = 'hidden';
-            detail_form_id.name = 'id';
-            detail_form_id.value = id;
-            document.getElementById('form_detail').appendChild(detail_form_id);
-            alert(id);
+            let delete_form_id = document.createElement('input');
+            delete_form_id.type = 'hidden';
+            delete_form_id.name = 'id';
+            delete_form_id.value = id;
+            document.getElementById('form_delete').appendChild(delete_form_id);
+            document.getElementById('form_delete').submit();
         }
     }
 </script>
