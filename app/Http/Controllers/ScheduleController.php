@@ -91,6 +91,28 @@ class ScheduleController extends Controller
         }
     }
 
+    public function edit(Request $request) {
+        if($request->list_status == 'normal') {
+            $data = Schedule::select(['id', 'name', 'begin_time', 'end_time', 'memo', 'is_duplication', 'color'])->where('id', $request->id)->first();
+            $data = [
+                'id' => $data->id,
+                'name' => $data->name,
+                'begin_time' => $data->begin_time,
+                'end_time' => $data->end_time,
+                'memo' => $data->memo,
+                'is_duplication' => $data->is_duplication,
+                'color' => $data->color,
+            ];
+            return view('scheduleEditNormal', ['list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'data' => $data]);
+        }
+        else if($request->list_status == 'repetition') {
+
+        }
+        else if($request->list_status == 'template') {
+
+        }
+    }
+
     public function add(Request $request) {
         if($request->input('begin_date')!=NULL && $request->input('begin_time')!=NULL) {
             $request->merge([ 'begin' => $request->input('begin_date').' '.$request->input('begin_time').':00' ]);

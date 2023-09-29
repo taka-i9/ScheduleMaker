@@ -47,6 +47,12 @@ Route::post('/home/schedule/detail', [App\Http\Controllers\ScheduleController::c
 
 Route::get('/home/schedule/detail', [App\Http\Controllers\ScheduleController::class, 'detail']);
 
+//Route::post('/home/schedule/edit', [App\Http\Controllers\ScheduleController::class, 'edit'])->name('schedule.edit');
+
+//Route::get('/home/schedule/edit', [App\Http\Controllers\ScheduleController::class, 'edit']);
+
+Route::get('/home/schedule/edit', [App\Http\Controllers\ScheduleController::class, 'edit'])->name('schedule.edit');
+
 Route::post('/home/schedule/delete', [App\Http\Controllers\ScheduleController::class, 'delete'])->name('schedule.delete');
 
 Route::get('/home/todo/new', function () {
