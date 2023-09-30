@@ -41,19 +41,19 @@ class ToDoController extends Controller
             'template_name' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $repetition_state = 0;
+        $repetition_state = "";
         $days=["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
         foreach($days as $day) {
-            $repetition_state *= 2;
             if($request->input('repetition_'.$day)) {
-                $repetition_state++;
+                $repetition_state .= "1";
             }
+            else $repetition_state .= "0";
         }
         if(!$request->input("is_repetition")) {
-            $repetition_state = 0;
+            $repetition_state = "0000000";
         }
         if($request->input("repetition_everyday")) {
-            $repetition_state = 127;
+            $repetition_state = "1111111";
         }
 
         if($request->input("is_repetition") || $request->input("is_template")) {

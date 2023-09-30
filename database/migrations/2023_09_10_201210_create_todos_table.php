@@ -20,7 +20,7 @@ return new class extends Migration
             $table->dateTime('deadline');
             $table->integer('required_minutes');
             $table->integer('rest_minutes');
-            $table->integer('repetition_state')->nullable();
+            $table->string('repetition_state', 7)->nullable();
             $table->string('memo')->nullable();
             $table->unsignedBigInteger('tag1_id')->nullable();
             $table->unsignedBigInteger('tag2_id')->nullable();

@@ -31,7 +31,6 @@ class Schedule extends Model
     protected $casts = [
         'begin_time' => 'datetime',
         'end_time' => 'datetime',
-        'reptition_state' => 'integer',
         'elapsed_days' => 'integer',
         'is_set_alerm' => 'boolean',
         'alerm_time' => 'datetime',

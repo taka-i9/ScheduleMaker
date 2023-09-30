@@ -32,7 +32,6 @@ class Todo extends Model
         'deadline' => 'datetime',
         'required_minutes' => 'integer',
         'rest_minutes' => 'integer',
-        'reptition_state' => 'integer',
         'priority_level' => 'integer',
         'is_done' => 'boolean',
     ];

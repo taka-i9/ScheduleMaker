@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('name');
             $table->dateTime('begin_time');
             $table->dateTime('end_time')->nullable();
-            $table->integer('repetition_state')->nullable();
+            $table->string('repetition_state', 7)->nullable();
             $table->integer('elapsed_days')->nullable();
             $table->string('memo')->nullable();
             $table->unsignedBigInteger('tag1_id')->nullable();
