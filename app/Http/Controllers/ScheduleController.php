@@ -71,6 +71,24 @@ class ScheduleController extends Controller
             $request->list_end = $request->list_end->format('Y-m-d');
         }
 
+        if($request->list_display_style == 'this_week') {
+            $request->list_begin = new \DateTimeImmutable($request->list_begin);
+            $request->list_end = new \DateTimeImmutable($request->list_end);
+            $request->list_begin = $request->list_begin->modify("-".strval(date('w'))." day");
+            $request->list_end = $request->list_end->modify("+".strval(6 - date('w'))." day");
+            $request->list_begin = $request->list_begin->format('Y-m-d');
+            $request->list_end = $request->list_end->format('Y-m-d');
+        }
+        else if($request->list_display_style == 'this_month') {
+            $request->list_begin = new \DateTimeImmutable($request->list_begin);
+            $request->list_end = new \DateTimeImmutable($request->list_end);
+            $request->list_begin = $request->list_begin->modify("-".strval(date('d') - 1)." day");
+            $request->list_end = $request->list_begin->modify("+1 month")->modify("-1 day");
+            $request->list_begin = $request->list_begin->format('Y-m-d');
+            $request->list_end = $request->list_end->format('Y-m-d');
+        }
+
+
         return view('scheduleListView', ['list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'schedule_data' => $schedule_data, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'deleted' => $request->deleted]);
     }
 

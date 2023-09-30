@@ -141,6 +141,12 @@
             &nbsp;
             <button type="button" onclick="backList()">一覧に戻る</button>
         </form>
+        <form method="GET" id="back_list">
+            <input type="hidden" name="list_status" id="list_status_back">
+            <input type="hidden" name="list_display_style" id="list_display_style_back">
+            <input type="hidden" name="list_begin" id="list_begin_back">
+            <input type="hidden" name="list_end" id="list_end_back">
+        <form>
     </div>
 </div>
 
@@ -167,6 +173,11 @@
             echo "document.getElementById('list_display_style').value = '".$list_display_style."';\n";
             echo "document.getElementById('list_begin').value = '".$list_begin."';\n";
             echo "document.getElementById('list_end').value = '".$list_end."';\n";
+
+            echo "document.getElementById('list_status_back').value = '".$list_status."';\n";
+            echo "document.getElementById('list_display_style_back').value = '".$list_display_style."';\n";
+            echo "document.getElementById('list_begin_back').value = '".$list_begin."';\n";
+            echo "document.getElementById('list_end_back').value = '".$list_end."';\n";
         }
         else {
             echo "document.getElementById('id').value = '".old('id')."'\n";
@@ -174,13 +185,37 @@
             echo "document.getElementById('list_display_style').value = '".old('list_display_style')."'\n";
             echo "document.getElementById('list_begin').value = '".old('list_begin')."'\n";
             echo "document.getElementById('list_end').value = '".old('list_end')."'\n";
+
+            echo "document.getElementById('list_status_back').value = '".old('list_status_back')."'\n";
+            echo "document.getElementById('list_display_style_back').value = '".old('list_display_style_back')."'\n";
+            echo "document.getElementById('list_begin_back').value = '".old('list_begin_back')."'\n";
+            echo "document.getElementById('list_end_back').value = '".old('list_end_back')."'\n";
         }
         ?>  
     };
 
+    function listSetting(type) {
+        let list_status_element = document.getElementById('list_status' + type);
+        let list_display_style_element = document.getElementById('list_display_style' + type);
+        let list_begin_element = document.getElementById('list_begin' + type);
+        let list_end_element = document.getElementById('list_end' + type);
+        if(list_status_element.value == 'normal') {
+            if(list_display_style_element.value != 'custom') {
+                list_begin_element.remove();
+                list_end_element.remove();
+            }
+        }
+        else {
+            delete list_display_style_element.remove();
+            delete list_begin_element.remove();
+            delete list_end_element.remove();
+        }
+    }
+
     function backList() {
-        document.getElementById('registration_form').action = "{{ route('schedule.list') }}";
-        document.getElementById('registration_form').submit();
+        listSetting('_back');
+        document.getElementById('back_list').action = "{{ route('schedule.list') }}";
+        document.getElementById('back_list').submit();
     }
 
     function changeEndDateLimit(){

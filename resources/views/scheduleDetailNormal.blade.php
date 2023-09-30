@@ -10,8 +10,6 @@
     </div>
     <div class="registration_form_content">
         <form method="GET" id="registration_form" action="{{ route('schedule.edit') }}" class="registration_form_content">
-            @csrf
-
             <div class="form_elements">
                 <div class="form_element_name">
                     <div class="form_element_content">
@@ -86,11 +84,11 @@
             &nbsp;
             <button type="button" onclick="backList()">一覧に戻る</button>
 
-            <input type="hidden" name="id" id="id">
             <input type="hidden" name="list_status" id="list_status">
             <input type="hidden" name="list_display_style" id="list_display_style">
             <input type="hidden" name="list_begin" id="list_begin">
             <input type="hidden" name="list_end" id="list_end">
+            <input type="hidden" name="id" id="id">
         </form>
     </div>
 </div>
@@ -104,10 +102,10 @@
         }
     ?>};
 
-    var list_status = "<?php if(isset($list_status)) echo $list_status; else echo old('list_status'); ?>";
-    var list_display_style = "<?php if(isset($list_display_style)) echo $list_display_style; else echo old('list_display_style'); ?>";
-    var list_begin = "<?php if(isset($list_begin)) echo $list_begin; else echo old('list_begin'); ?>";
-    var list_end = "<?php if(isset($list_end)) echo $list_end; else echo old('list_end'); ?>";
+    var list_status = "<?php if(isset($list_status)) echo $list_status; ?>";
+    var list_display_style = "<?php if(isset($list_display_style)) echo $list_display_style; ?>";
+    var list_begin = "<?php if(isset($list_begin)) echo $list_begin; ?>";
+    var list_end = "<?php if(isset($list_end)) echo $list_end; ?>";
     var updated = "<?php if(isset($updated)) echo $updated; ?>";
 
     window.onload = function() {
@@ -137,18 +135,32 @@
         }
     };
 
+    function listSetting() {
+        let list_status_element = document.getElementById('list_status');
+        let list_display_style_element = document.getElementById('list_display_style');
+        let list_begin_element = document.getElementById('list_begin');
+        let list_end_element = document.getElementById('list_end');
+        if(list_status_element.value == 'normal') {
+            if(list_display_style_element.value != 'custom') {
+                list_begin_element.remove();
+                list_end_element.remove();
+            }
+        }
+        else {
+            delete list_display_style_element.remove();
+            delete list_begin_element.remove();
+            delete list_end_element.remove();
+        }
+    }
+
     function toEdit() {
-        let req_token = "_token=" + document.getElementsByName('csrf-token')[0].content;
-        let req_id = "id=" + document.getElementById('id').value;
-        let req_list_status = "list_status=" + document.getElementById('list_status').value;
-        let req_list_display_style = "list_display_style=" + document.getElementById('list_display_style').value;
-        let req_list_begin = "list_begin=" + document.getElementById('list_begin').value;
-        let req_list_end = "list_end=" + document.getElementById('list_end').value;
-        let url = "{{ route('schedule.edit')}}" + "?" + req_id + "&" + req_list_status + "&" + req_list_display_style + "&" + req_list_begin + "&" + req_list_end;
-        location.href = url;
+        listSetting();
+        document.getElementById('registration_form').submit();
     }
 
     function backList() {
+        listSetting();
+        document.getElementById('id').remove();
         document.getElementById('registration_form').action = "{{ route('schedule.list') }}";
         document.getElementById('registration_form').submit();
     }

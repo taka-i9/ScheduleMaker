@@ -17,7 +17,7 @@
                 &nbsp;
                 <input type="checkbox" id="template_view" onclick="changeStatus('template')"><label for="template_view">テンプレート</label>
                 &nbsp;
-                <input type="submit" value="更新">
+                <input type="submit" onclick="listSetting('')" value="更新">
             </div>
             <div id="detail_normal" style="display: flex;" hidden>
                 <input type="checkbox" id="from_now" onclick="changeDisplayStyle('from_now')"><label for="from_now">現在以降</label>
@@ -67,8 +67,8 @@
     window.onload = function() {
         document.getElementById('{{ $list_status }}' + '_view').checked = true;
         document.getElementById('list_status').value = '{{ $list_status }}';
-        document.getElementById('{{ $list_display_style }}').checked = true;
         if('{{ $list_status }}' == 'normal') {
+            document.getElementById('{{ $list_display_style }}').checked = true;
             document.getElementById('detail_normal').hidden = false;
             document.getElementById('list_display_style').value = '{{ $list_display_style }}';
             if('{{ $list_display_style }}' == 'custom') {
@@ -90,18 +90,22 @@
         let detail_form_status = document.createElement('input');
         detail_form_status.type = 'hidden';
         detail_form_status.name = 'list_status';
+        detail_form_status.id = 'list_status_detail';
         detail_form_status.value = '{{ $list_status }}';
         let detail_form_display_style = document.createElement('input');
         detail_form_display_style.type = 'hidden';
         detail_form_display_style.name = 'list_display_style';
+        detail_form_display_style.id = 'list_display_style_detail';
         detail_form_display_style.value = '{{ $list_display_style }}';
         let detail_form_begin = document.createElement('input');
         detail_form_begin.type = 'hidden';
         detail_form_begin.name = 'list_begin';
+        detail_form_begin.id = 'list_begin_detail';
         detail_form_begin.value = '{{ $list_begin }}';
         let detail_form_end = document.createElement('input');
         detail_form_end.type = 'hidden';
         detail_form_end.name = 'list_end';
+        detail_form_end.id = 'list_end_detail';
         detail_form_end.value = '{{ $list_end }}';
         document.getElementById('form_detail').appendChild(detail_form_status);
         document.getElementById('form_detail').appendChild(detail_form_display_style);
@@ -110,18 +114,22 @@
         let delete_form_status = document.createElement('input');
         delete_form_status.type = 'hidden';
         delete_form_status.name = 'list_status';
+        delete_form_status.id = 'list_status_delete';
         delete_form_status.value = '{{ $list_status }}';
         let delete_form_display_style = document.createElement('input');
         delete_form_display_style.type = 'hidden';
         delete_form_display_style.name = 'list_display_style';
+        delete_form_display_style.id = 'list_display_style_delete';
         delete_form_display_style.value = '{{ $list_display_style }}';
         let delete_form_begin = document.createElement('input');
         delete_form_begin.type = 'hidden';
         delete_form_begin.name = 'list_begin';
+        delete_form_begin.id = 'list_begin_delete';
         delete_form_begin.value = '{{ $list_begin }}';
         let delete_form_end = document.createElement('input');
         delete_form_end.type = 'hidden';
         delete_form_end.name = 'list_end';
+        delete_form_end.id = 'list_end_delete';
         delete_form_end.value = '{{ $list_end }}';
         document.getElementById('form_delete').appendChild(delete_form_status);
         document.getElementById('form_delete').appendChild(delete_form_display_style);
@@ -130,7 +138,6 @@
 
         if("{{ $deleted }}") {
             alert("削除が完了しました。");
-            //document.getElementById('list_setting').submit();
         }
     };
     
@@ -213,6 +220,24 @@
         }
     }
 
+    function listSetting(type) {
+        let list_status_element = document.getElementById('list_status' + type);
+        let list_display_style_element = document.getElementById('list_display_style' + type);
+        let list_begin_element = document.getElementById('list_begin' + type);
+        let list_end_element = document.getElementById('list_end' + type);
+        if(list_status_element.value == 'normal') {
+            if(list_display_style_element.value != 'custom') {
+                list_begin_element.remove();
+                list_end_element.remove();
+            }
+        }
+        else {
+            list_display_style_element.remove();
+            list_begin_element.remove();
+            list_end_element.remove();
+        }
+    }
+
     function displayNormal(name, begin_time, end_time, id) {
         let content = document.createElement('div');
         content.className = 'view_content';
@@ -277,6 +302,7 @@
     }
 
     function showDetailSchedule(id) {
+        listSetting('_detail');
         let detail_form_id = document.createElement('input');
         detail_form_id.type = 'hidden';
         detail_form_id.name = 'id';
@@ -287,6 +313,7 @@
 
     function deleteSchedule(id) {
         if(window.confirm('この要素を削除します。\nよろしいですか。')) {
+            listSetting('_delete');
             let delete_form_id = document.createElement('input');
             delete_form_id.type = 'hidden';
             delete_form_id.name = 'id';
