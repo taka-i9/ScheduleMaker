@@ -37,17 +37,54 @@
                 ~
                 <input type="date" id="custom_end" onchange="changeCustomEnd()">
             </div>
+            <div id="detail_repetition" style="position: relative; display: flex;" hidden>
+                <div style="position: absolute;">
+                    <input type="checkbox" id="repetition_sun" onchange="changeRepetition(this, 0)"><label for="repetition_sun">日</label>
+                </div>
+                <div style="position: absolute; margin-left: 40px;">
+                    <input type="checkbox" id="repetition_mon" onchange="changeRepetition(this, 1)"><label for="repetition_mon">月</label>
+                </div>
+                <div style="position: absolute; margin-left: 80px;">
+                    <input type="checkbox" id="repetition_tue" onchange="changeRepetition(this, 2)"><label for="repetition_tue">火</label>
+                </div>
+                <div style="position: absolute; margin-left: 120px;">
+                    <input type="checkbox" id="repetition_wed" onchange="changeRepetition(this, 3)"><label for="repetition_wed">水</label>
+                </div>
+                <div style="position: absolute; margin-left: 160px;">
+                    <input type="checkbox" id="repetition_thu" onchange="changeRepetition(this, 4)"><label for="repetition_thu">木</label>
+                </div>
+                <div style="position: absolute; margin-left: 200px;">
+                    <input type="checkbox" id="repetition_fri" onchange="changeRepetition(this, 5)"><label for="repetition_fri">金</label>
+                </div>
+                <div style="position: absolute; margin-left: 240px;">
+                    <input type="checkbox" id="repetition_sat" onchange="changeRepetition(this, 6)"><label for="repetition_sat">土</label>
+                </div>
+                <div style="position: absolute; margin-left: 280px;">
+                    <input type="checkbox" id="everyday" onchange="changeStateReptationEveryday(this)"><label for="everyday">全て</label>
+                </div>
+            </div>
             <input type="hidden" name="list_status" id="list_status">
             <input type="hidden" name="list_display_style" id="list_display_style" value="from_now">
             <input type="hidden" name="list_begin" id="list_begin">
             <input type="hidden" name="list_end" id="list_end">
+            <input type="hidden" name="list_repetition" id="list_repetition" value="0000000">
         </form>
     </div>
     <div class="view_form_content" id="view_form_content">
         <form method="get" id="form_detail" action="{{ route('schedule.detail') }}">
+            <input type="hidden" name="list_status" id="list_status_detail">
+            <input type="hidden" name="list_display_style" id="list_display_style_detail">
+            <input type="hidden" name="list_begin" id="list_begin_detail">
+            <input type="hidden" name="list_end" id="list_end_detail">
+            <input type="hidden" name="list_repetition" id="list_repetition_detail">
         </form>
         <form method="post" id="form_delete" action="{{ route('schedule.delete') }}">
             @csrf
+            <input type="hidden" name="list_status" id="list_status_delete">
+            <input type="hidden" name="list_display_style" id="list_display_style_delete">
+            <input type="hidden" name="list_begin" id="list_begin_delete">
+            <input type="hidden" name="list_end" id="list_end_delete">
+            <input type="hidden" name="list_repetition" id="list_repetition_delete">
         </form>
     </div>
 
@@ -75,66 +112,52 @@
                 document.getElementById('detail_custom').hidden = false;    
             }
         }
+        if('{{ $list_status }}' == 'repetition') {
+            document.getElementById('detail_repetition').hidden = false;
+            let days=["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+            let display_repetition = '{{ $list_repetition }}';
+            if(display_repetition == '1111111') {
+                document.getElementById('everyday').checked = true;
+                changeStateReptationEveryday(document.getElementById('everyday'));
+            }
+            else {
+                for(let i = 0; i < days.length; i++) {
+                    if(display_repetition.substr(i, 1) == '1') {
+                        document.getElementById("repetition_"+days[i]).checked = true;
+                    }
+                }
+            }
+        }
         document.getElementById('list_begin').value = '{{ $list_begin }}';
         document.getElementById('list_end').value = '{{ $list_end }}';
         document.getElementById('custom_begin').value = '{{ $list_begin }}';
         document.getElementById('custom_end').value = '{{ $list_end }}';
         changeCustomBegin();
         changeCustomEnd();
+        document.getElementById('list_repetition').value = '{{ $list_repetition }}';
         if('{{ $list_status }}' == 'normal') {
             displayNormal('スケジュール名', '開始時刻', '終了時刻', '0');
             for(let i = 0; i < schedule_data.length; i++) {
                 displayNormal(schedule_data[i]['name'], schedule_data[i]['begin_time'], schedule_data[i]['end_time'], schedule_data[i]['id']);
             }
         }
-        let detail_form_status = document.createElement('input');
-        detail_form_status.type = 'hidden';
-        detail_form_status.name = 'list_status';
-        detail_form_status.id = 'list_status_detail';
-        detail_form_status.value = '{{ $list_status }}';
-        let detail_form_display_style = document.createElement('input');
-        detail_form_display_style.type = 'hidden';
-        detail_form_display_style.name = 'list_display_style';
-        detail_form_display_style.id = 'list_display_style_detail';
-        detail_form_display_style.value = '{{ $list_display_style }}';
-        let detail_form_begin = document.createElement('input');
-        detail_form_begin.type = 'hidden';
-        detail_form_begin.name = 'list_begin';
-        detail_form_begin.id = 'list_begin_detail';
-        detail_form_begin.value = '{{ $list_begin }}';
-        let detail_form_end = document.createElement('input');
-        detail_form_end.type = 'hidden';
-        detail_form_end.name = 'list_end';
-        detail_form_end.id = 'list_end_detail';
-        detail_form_end.value = '{{ $list_end }}';
-        document.getElementById('form_detail').appendChild(detail_form_status);
-        document.getElementById('form_detail').appendChild(detail_form_display_style);
-        document.getElementById('form_detail').appendChild(detail_form_begin);
-        document.getElementById('form_detail').appendChild(detail_form_end);
-        let delete_form_status = document.createElement('input');
-        delete_form_status.type = 'hidden';
-        delete_form_status.name = 'list_status';
-        delete_form_status.id = 'list_status_delete';
-        delete_form_status.value = '{{ $list_status }}';
-        let delete_form_display_style = document.createElement('input');
-        delete_form_display_style.type = 'hidden';
-        delete_form_display_style.name = 'list_display_style';
-        delete_form_display_style.id = 'list_display_style_delete';
-        delete_form_display_style.value = '{{ $list_display_style }}';
-        let delete_form_begin = document.createElement('input');
-        delete_form_begin.type = 'hidden';
-        delete_form_begin.name = 'list_begin';
-        delete_form_begin.id = 'list_begin_delete';
-        delete_form_begin.value = '{{ $list_begin }}';
-        let delete_form_end = document.createElement('input');
-        delete_form_end.type = 'hidden';
-        delete_form_end.name = 'list_end';
-        delete_form_end.id = 'list_end_delete';
-        delete_form_end.value = '{{ $list_end }}';
-        document.getElementById('form_delete').appendChild(delete_form_status);
-        document.getElementById('form_delete').appendChild(delete_form_display_style);
-        document.getElementById('form_delete').appendChild(delete_form_begin);
-        document.getElementById('form_delete').appendChild(delete_form_end);
+        if('{{ $list_status }}' == 'repetition') {
+            displayRepetition('スケジュール名', '繰り返し', '0');
+            for(let i = 0; i < schedule_data.length; i++) {
+                displayRepetition(schedule_data[i]['name'], schedule_data[i]['repetition'], schedule_data[i]['id']);
+            }
+        }
+        document.getElementById('list_status_detail').value = '{{ $list_status }}';
+        document.getElementById('list_display_style_detail').value = '{{ $list_display_style }}';
+        document.getElementById('list_begin_detail').value = '{{ $list_begin }}';
+        document.getElementById('list_end_detail').value = '{{ $list_end }}';
+        document.getElementById('list_repetition_detail').value = '{{ $list_repetition }}';
+
+        document.getElementById('list_status_delete').value = '{{ $list_status }}';
+        document.getElementById('list_display_style_delete').value = '{{ $list_display_style }}';
+        document.getElementById('list_begin_delete').value = '{{ $list_begin }}';
+        document.getElementById('list_end_delete').value = '{{ $list_end }}';
+        document.getElementById('list_repetition_delete').value = '{{ $list_repetition }}';
 
         if("{{ $deleted }}") {
             alert("削除が完了しました。");
@@ -152,6 +175,7 @@
             document.getElementById('detail_custom').hidden = true;
         }
         else if(list_status.value == 'repetition') {
+            document.getElementById('detail_repetition').hidden = true;
         }
         list_status.value = type;
         if(type == 'normal') {
@@ -161,6 +185,7 @@
             }
         }
         else if(type == 'repetition') {
+            document.getElementById('detail_repetition').hidden = false;
         }
     }
 
@@ -225,6 +250,7 @@
         let list_display_style_element = document.getElementById('list_display_style' + type);
         let list_begin_element = document.getElementById('list_begin' + type);
         let list_end_element = document.getElementById('list_end' + type);
+        let list_repetition_element = document.getElementById('list_repetition' + type);
         if(list_status_element.value == 'normal') {
             if(list_display_style_element.value != 'custom') {
                 list_begin_element.remove();
@@ -235,6 +261,9 @@
             list_display_style_element.remove();
             list_begin_element.remove();
             list_end_element.remove();
+        }
+        if(list_status_element.value != 'repetition') {
+            list_repetition_element.remove();
         }
     }
 
@@ -301,6 +330,67 @@
         document.getElementById('view_form_content').appendChild(content);
     }
 
+    function displayRepetition(name, repetition, id) {
+        let content = document.createElement('div');
+        content.className = 'view_content';
+        let name_parent = document.createElement('div');
+        name_parent.className = 'view_schedule_contents_parent';
+        let name_child = document.createElement('div');
+        name_child.className = 'view_contents_child';
+        name_child.innerText = name;
+        name_parent.appendChild(name_child);
+        let repetition_parent = document.createElement('div');
+        repetition_parent.className = 'view_schedule_contents_repetition_parent';
+        let repetition_child = document.createElement('div');
+        repetition_child.className = 'view_contents_child';
+        if(id == '0') {
+            repetition_child.innerText = repetition;
+        }
+        else {
+            repetition_child.innerText = viewRepetitionState(repetition);
+        }
+        repetition_parent.appendChild(repetition_child);
+        let detail_parent = document.createElement('div');
+        detail_parent.className = 'view_detail_parent';
+        let detail_child = document.createElement('div');
+        detail_child.className = 'view_contents_child';
+        if(id == '0') {
+            detail_child.innerText = '詳細';
+        }
+        else {
+            let detail_button = document.createElement('button');
+            detail_button.type = 'button';
+            detail_button.innerText = '詳細';
+            detail_button.addEventListener('click', (event) => {
+                showDetailSchedule(id);
+            });
+            detail_child.appendChild(detail_button);
+        }
+        detail_parent.appendChild(detail_child);
+        let delete_parent = document.createElement('div');
+        delete_parent.className = 'view_delete_parent';
+        let delete_child = document.createElement('div');
+        delete_child.className = 'view_contents_child';
+        if(id == '0') {
+            delete_child.innerText = '削除';
+        }
+        else {
+            let delete_button = document.createElement('button');
+            delete_button.type = 'button';
+            delete_button.innerText = '削除';
+            delete_button.addEventListener('click', (event) => {
+                deleteSchedule(id);
+            });
+            delete_child.appendChild(delete_button);
+        }
+        delete_parent.appendChild(delete_child);
+        content.appendChild(name_parent);
+        content.appendChild(repetition_parent);
+        content.appendChild(detail_parent);
+        content.appendChild(delete_parent);
+        document.getElementById('view_form_content').appendChild(content);
+    }
+
     function showDetailSchedule(id) {
         listSetting('_detail');
         let detail_form_id = document.createElement('input');
@@ -321,6 +411,36 @@
             document.getElementById('form_delete').appendChild(delete_form_id);
             document.getElementById('form_delete').submit();
         }
+    }
+
+    function changeStateReptationEveryday(value){
+        let days=["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+        days.forEach(function(day) {
+            document.getElementById("repetition_"+day).disabled = value.checked;
+            document.getElementById("repetition_"+day).checked = value.checked;
+        });
+        document.getElementById('list_repetition').value = value.checked ? '1111111' : '0000000';
+    }
+
+    function changeRepetition(value, pos) {
+        let prev = document.getElementById('list_repetition').value;
+        let replaced = value.checked ? '1' : '0';
+        document.getElementById('list_repetition').value = prev.slice(0, pos) + replaced + prev.slice(pos + 1);
+    }
+
+    function viewRepetitionState(repetition) {
+        let days = ["日", "月", "火", "水", "木", "金", "土"];
+        let state = "";
+        days.forEach(function(day, index) {
+            if(repetition.substr(index, 1) == '1') {
+                state += day;
+            }
+            else {
+                state += '　';
+            }
+            state += '　';
+        });
+        return state;
     }
 </script>
 

@@ -33,15 +33,11 @@ Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
-Route::get('/home/schedule/new', function () {
-    return view('scheduleRegistrationForm');
-});
+Route::get('/home/schedule/new', [App\Http\Controllers\ScheduleController::class, 'new']);
 
 Route::get('/home/schedule/list', [App\Http\Controllers\ScheduleController::class, 'list'])->name('schedule.list');
 
 Route::post('/home/schedule/add', [App\Http\Controllers\ScheduleController::class, 'add'])->name('schedule.add');
-
-//Route::post('/home/schedule/detail', [App\Http\Controllers\ScheduleController::class, 'detail'])->name('schedule.detail');
 
 Route::get('/home/schedule/detail', [App\Http\Controllers\ScheduleController::class, 'detail'])->name('schedule.detail');
 

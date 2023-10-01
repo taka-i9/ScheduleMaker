@@ -11,10 +11,11 @@ class ScheduleController extends Controller
         $this->middleware('auth');
     }
 
-    function getScheduleData($list_status, $list_display_style, $list_begin, $list_end) {
+    function getScheduleData($list_status, $list_display_style, $list_begin, $list_end, $list_repetition) {
         $schedule_data = array();
-        $data = Schedule::select(['id', 'name', 'begin_time', 'end_time'])->where('user_id', \Auth::user()->id)->where('status', $list_status);
+        $data = '';
         if($list_status == "normal") {
+            $data = Schedule::select(['id', 'name', 'begin_time', 'end_time'])->where('user_id', \Auth::user()->id)->where('status', $list_status);
             if($list_display_style == 'from_now') {
                 $now = date('Y-m-d H:i:s');
                 $data = $data->where('begin_time', '>=', $now);
@@ -37,12 +38,38 @@ class ScheduleController extends Controller
             }
         }
         else if($list_status == "repetition") {
+            $data = Schedule::select(['id', 'name', 'repetition_state'])->where('user_id', \Auth::user()->id)->where('status', $list_status);
+            $isFirst = true;
+            for($i = 0; $i < strlen($list_repetition); $i++) {
+                if(substr($list_repetition, $i, 1) == '1') {
+                    $pattern = str_repeat('_', $i).'1'.str_repeat('_', strlen($list_repetition) - $i -1);
+                    if($isFirst) {
+                        $data->where('repetition_state', 'like', $pattern);
+                        $isFirst = false;
+                    }
+                    else {
+                        $data->orWhere('repetition_state', 'like', $pattern);
+                    }
+                }
+            }
+            $data = $data->orderBy('repetition_state')->get();
 
+            foreach($data as $value) {
+                array_push($schedule_data, [
+                    'id' => $value->id,
+                    'name' => $value->name,
+                    'repetition' => $value->repetition_state,
+                ]);
+            }
         }
         else if($list_status == "template") {
 
         }
         return $schedule_data;
+    }
+
+    public function new(Request $request) {
+        return view('scheduleRegistrationForm');
     }
 
     public function list(Request $request) {
@@ -53,8 +80,6 @@ class ScheduleController extends Controller
         if(!$request->has('deleted')) {
             $request->merge(['deleted' => '']);
         }
-
-        $schedule_data = self::getScheduleData($request->list_status, $request->list_display_style, $request->list_begin, $request->list_end);
 
         if(!$request->has('list_begin')) {
             $request->merge(['list_begin' => date('Y-m-d')]);
@@ -69,6 +94,9 @@ class ScheduleController extends Controller
         else {
             $request->list_end = new \DateTimeImmutable($request->list_end);
             $request->list_end = $request->list_end->format('Y-m-d');
+        }
+        if(!$request->has('list_repetition')) {
+            $request->merge(['list_repetition' => '0000000']);
         }
 
         if($request->list_display_style == 'this_week') {
@@ -88,8 +116,9 @@ class ScheduleController extends Controller
             $request->list_end = $request->list_end->format('Y-m-d');
         }
 
+        $schedule_data = self::getScheduleData($request->list_status, $request->list_display_style, $request->list_begin, $request->list_end, $request->list_repetition);
 
-        return view('scheduleListView', ['list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'schedule_data' => $schedule_data, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'deleted' => $request->deleted]);
+        return view('scheduleListView', ['list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'schedule_data' => $schedule_data, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'list_repetition' => $request->list_repetition, 'deleted' => $request->deleted]);
     }
 
     public function detail(Request $request) {
@@ -107,10 +136,21 @@ class ScheduleController extends Controller
                 'is_duplication' => $data->is_duplication,
                 'color' => $data->color,
             ];
-            return view('scheduleDetailNormal', ['list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'data' => $data, 'updated' => $request->updated]);
+            return view('scheduleDetailNormal', ['list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'list_repetition' => $request->list_repetition, 'data' => $data, 'updated' => $request->updated]);
         }
         else if($request->list_status == 'repetition') {
-
+            $data = Schedule::select(['id', 'name', 'begin_time', 'end_time', 'repetition_state', 'memo', 'is_duplication', 'color'])->where('user_id', \Auth::user()->id)->where('id', $request->id)->first();
+            $data = [
+                'id' => $data->id,
+                'name' => $data->name,
+                'begin_time' => $data->begin_time,
+                'end_time' => $data->end_time,
+                'repetition_state' => $data->repetition_state,
+                'memo' => $data->memo,
+                'is_duplication' => $data->is_duplication,
+                'color' => $data->color,
+            ];
+            return view('scheduleDetailRepetition', ['list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'list_repetition' => $request->list_repetition, 'data' => $data, 'updated' => $request->updated]);
         }
         else if($request->list_status == 'template') {
 
@@ -129,7 +169,7 @@ class ScheduleController extends Controller
                 'is_duplication' => $data->is_duplication,
                 'color' => $data->color,
             ];
-            return view('scheduleEditNormal', ['list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'data' => $data]);
+            return view('scheduleEditNormal', ['list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'list_repetition' => $request->list_repetition, 'data' => $data]);
         }
         else if($request->list_status == 'repetition') {
 
@@ -143,7 +183,7 @@ class ScheduleController extends Controller
         Schedule::where('user_id', \Auth::user()->id)->where('id', $request->id)->delete();
         $request->merge([ 'deleted' => true ]);
         $schedule_data = self::getScheduleData($request->list_status, $request->list_display_style, $request->list_begin, $request->list_end);
-        return redirect(route('schedule.list', ['list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'deleted' => $request->deleted]));
+        return redirect(route('schedule.list', ['list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'list_repetition' => $request->list_repetition, 'deleted' => $request->deleted]));
     }
 
     public function add(Request $request) {
@@ -271,7 +311,7 @@ class ScheduleController extends Controller
                 $content->color = $request->color;
                 $content->save();
                 $request->merge(['updated' => true]);
-                return redirect(route('schedule.detail', ['id' => $request->id, 'list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'updated' => $request->updated]));
+                return redirect(route('schedule.detail', ['id' => $request->id, 'list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'list_repetition' => $request->list_repetition, 'updated' => $request->updated]));
             }
             else if($request->list_status == 'repetition') {
 
