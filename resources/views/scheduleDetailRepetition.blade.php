@@ -46,6 +46,41 @@
                     </div>
                 </div>
             </div>
+            <div class="form_elements" id="repetition_form">
+                <div class="form_element_name">
+                    <div class="form_element_content">
+                        繰り返し設定<br>
+                    </div>
+                </div>
+                <div class="form_element_input_base">
+                    <div class="form_element_value" style="display: flex;">
+                        <div class="form_element_checkbox">
+                            <input type="checkbox" id="repetition_sun" disabled> 日
+                        </div>
+                        <div class="form_element_checkbox" style="margin-left: 40px;">
+                            <input type="checkbox" id="repetition_mon" disabled> 月
+                        </div>
+                        <div class="form_element_checkbox" style="margin-left: 80px;">
+                            <input type="checkbox" id="repetition_tue" disabled> 火
+                        </div>
+                        <div class="form_element_checkbox" style="margin-left: 120px;">
+                            <input type="checkbox" id="repetition_wed" disabled> 水
+                        </div>
+                        <div class="form_element_checkbox" style="margin-left: 160px;">
+                            <input type="checkbox" id="repetition_thu" disabled> 木
+                        </div>
+                        <div class="form_element_checkbox" style="margin-left: 200px;">
+                            <input type="checkbox" id="repetition_fri" disabled> 金
+                        </div>
+                        <div class="form_element_checkbox" style="margin-left: 240px;">
+                            <input type="checkbox" id="repetition_sat" disabled> 土
+                        </div>
+                        <div class="form_element_checkbox" style="margin-left: 280px;">
+                            <input type="checkbox" id="repetition_everyday" disabled> 毎日
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="form_elements">
                 <div class="form_element_name">
                     <div class="form_element_content">
@@ -101,85 +136,56 @@
     ?>};
 
     var list_status = "<?php if(isset($list_status)) echo $list_status; ?>";
-    var list_display_style = "<?php if(isset($list_display_style)) echo $list_display_style; ?>";
-    var list_begin = "<?php if(isset($list_begin)) echo $list_begin; ?>";
-    var list_end = "<?php if(isset($list_end)) echo $list_end; ?>";
+    var list_repetition = "<?php if(isset($list_repetition)) echo $list_repetition; ?>";
     var updated = "<?php if(isset($updated)) echo $updated; ?>";
 
     window.onload = function() {
         var name = data['name'];
-        var begin_date = data['begin_time'].substr(0, 10);
         var begin_time = data['begin_time'].substr(-8, 5);
-        var end_date = data['end_time'].substr(0, 10);
         var end_time = data['end_time'].substr(-8, 5);
+        var repetition = data['repetition'];
+        var elapsed_days = data['elapsed_days']
         var memo = data['memo'];
         var is_duplication = data['is_duplication'];
         var color = data['color'];
         document.getElementById('name').innerHTML = '<div class="form_element_text">' + name + '</div>';
-        document.getElementById('begin_time').innerHTML = '<div class="form_element_text">' + begin_date + ' ' + begin_time + '</div>';
-        document.getElementById('end_time').innerHTML = '<div class="form_element_text">' + end_date + ' ' + end_time + '</div>';
+        document.getElementById('begin_time').innerHTML = '<div class="form_element_text">' + begin_time + '</div>';
+        document.getElementById('end_time').innerHTML = '<div class="form_element_text">' + elapsed_days + ' 日後の ' + end_time + '</div>';
         document.getElementById('memo').innerHTML = '<div class="form_element_text">' + memo + '</div>';
         document.getElementById('is_duplication').innerHTML = '<div class="form_element_text">' + (is_duplication!="" ? '許可する' : '許可しない') + '</div>';
         document.getElementById('color').value = color;
         
         document.getElementById('id').value = data['id'];
         document.getElementById('list_status').value = list_status;
-        document.getElementById('list_display_style').value = list_display_style;
-        document.getElementById('list_begin').value = list_begin;
-        document.getElementById('list_end').value = list_end;
+        document.getElementById('list_repetition').value = list_repetition;
+        
+        viewRepetitionState(repetition);
 
         if(updated) {
             alert("更新しました。");
         }
     };
 
-    function listSetting() {
-        let list_status_element = document.getElementById('list_status');
-        let list_display_style_element = document.getElementById('list_display_style');
-        let list_begin_element = document.getElementById('list_begin');
-        let list_end_element = document.getElementById('list_end');
-        if(list_status_element.value == 'normal') {
-            if(list_display_style_element.value != 'custom') {
-                list_begin_element.remove();
-                list_end_element.remove();
-            }
-        }
-        else {
-            delete list_display_style_element.remove();
-            delete list_begin_element.remove();
-            delete list_end_element.remove();
-        }
-    }
-
     function toEdit() {
-        listSetting();
         document.getElementById('registration_form').submit();
     }
 
     function backList() {
-        listSetting();
         document.getElementById('id').remove();
         document.getElementById('registration_form').action = "{{ route('schedule.list') }}";
         document.getElementById('registration_form').submit();
     }
 
-    function changeEndDateLimit(){
-        document.getElementById("begin_date").max = document.getElementById("end_date").value;
-        document.getElementById("end_date").min = document.getElementById("begin_date").value;
-    }
-
-    function changeEndTimeLimit(){
-        if(document.getElementById("begin_date").value === document.getElementById("end_date").value){
-            document.getElementById("end_time").min = document.getElementById("begin_time").value;
+    function viewRepetitionState(repetition) {
+        let days = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+        days.forEach(function(day, index) {
+            if(repetition.substr(index, 1) == '1') {
+                document.getElementById('repetition_' + day).checked = true;
+            }
+        });
+        if(repetition == '1111111') {
+            document.getElementById('repetition_everyday').checked = true;
         }
-        else{
-            document.getElementById("end_time").min = "";
-        }
-    }
-
-    function changeEndLimit() {
-        changeEndDateLimit();
-        changeEndTimeLimit();
     }
 </script>
 

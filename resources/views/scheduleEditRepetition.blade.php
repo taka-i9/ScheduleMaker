@@ -8,8 +8,9 @@
             スケジュール 編集
         </div>
     </div>
+    
     <div class="registration_form_content">
-        <form method="POST" id="registration_form" action="{{ route('schedule.add') }}" class="registration_form_content">
+        <form method="POST" action="{{ route('schedule.add') }}" class="registration_form_content">
             @csrf
 
             <div class="form_elements">
@@ -34,7 +35,7 @@
                     </div>
                 </div>
             </div>
-            <div class="form_elements">
+            <div class="form_elements" id="repetition_begin_form">
                 <div class="form_element_name">
                     <div class="form_element_content">
                         開始時刻<br>
@@ -42,25 +43,23 @@
                 </div>
                 <div class="form_element_input_base">
                     <div class="form_element_error">
-                        @if ($errors->has('begin'))
+                        @if ($errors->has('repetition_begin'))
                             <!--<span class="invalid-feedback" role="alert">-->
                             <span style="color: red;" role="alert">
-                                {{ $errors->first('begin') }}
+                                {{ $errors->first('repetition_begin') }}
                             </span>
                         @endif
                     </div>
                     <div class="form_element_input">
                         <div class="form_element_value">
                             <div class="form_element_time">
-                                <input type="date" name="begin_date" id="begin_date" value="{{ old('begin_date') }}" onchange="changeEndLimit()">
-                                &nbsp;
-                                <input type="time" name="begin_time" id="begin_time" value="{{ old('begin_time') }}" onchange="changeEndLimit()">
+                                <input type="time" name="repetition_begin_time" id="repetition_begin_time" value="{{ old('repetition_begin_time') }}" onchange="changeRepetitionEndLimit()">
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="form_elements">
+            <div class="form_elements" id="repetition_end_form">
                 <div class="form_element_name">
                     <div class="form_element_content">
                         終了時刻<br>
@@ -68,20 +67,63 @@
                 </div>
                 <div class="form_element_input_base">
                     <div class="form_element_error">
-                        @if ($errors->has('end'))
+                        @if ($errors->has('repetition_end'))
                             <!--<span class="invalid-feedback" role="alert">-->
                             <span style="color: red;" role="alert">
-                                {{ $errors->first('end') }}
+                                {{ $errors->first('repetition_end') }}
                             </span>
                         @endif
                     </div>
                     <div class="form_element_input">
                         <div class="form_element_value">
                             <div class="form_element_time">
-                                <input type="date" name="end_date" id="end_date" value="{{ old('end_date') }}" onchange="changeEndLimit()">
+                                <input type="number" name="repetition_end_date" id="repetition_end_date" style="width: 20%" value="{{ old('repetition_end_date') ? old('repetition_end_date') : '0' }}" min="0" onchange="changeRepetitionEndLimit()">日後の
                                 &nbsp;
-                                <input type="time" name="end_time" id="end_time" value="{{ old('end_time') }}" onchange="changeEndLimit()">
+                                <input type="time" name="repetition_end_time" id="repetition_end_time" value="{{ old('repetition_end_time') }}" onchange="changeRepetitionEndLimit()">
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form_elements" id="repetition_form">
+                <div class="form_element_name">
+                    <div class="form_element_content">
+                        繰り返し設定<br>
+                    </div>
+                </div>
+                <div class="form_element_input_base">
+                    <div class="form_element_error">
+                        @if ($errors->has('repetition_setting'))
+                            <!--<span class="invalid-feedback" role="alert">-->
+                            <span style="color: red;" role="alert">
+                                {{ $errors->first('repetition_setting') }}
+                            </span>
+                        @endif
+                    </div>
+                    <div class="form_element_value" style="display: flex;">
+                        <div class="form_element_checkbox">
+                            <input type="checkbox" name="repetition_sun" id="repetition_sun" {{ old('repetition_sun') || old('repetition_everyday') ? 'checked' : '' }} {{ old('repetition_everyday') ? 'disabled' : '' }}> 日
+                        </div>
+                        <div class="form_element_checkbox" style="margin-left: 40px;">
+                            <input type="checkbox" name="repetition_mon" id="repetition_mon" {{ old('repetition_mon') || old('repetition_everyday') ? 'checked' : '' }} {{ old('repetition_everyday') ? 'disabled' : '' }}> 月
+                        </div>
+                        <div class="form_element_checkbox" style="margin-left: 80px;">
+                            <input type="checkbox" name="repetition_tue" id="repetition_tue" {{ old('repetition_tue') || old('repetition_everyday') ? 'checked' : '' }} {{ old('repetition_everyday') ? 'disabled' : '' }}> 火
+                        </div>
+                        <div class="form_element_checkbox" style="margin-left: 120px;">
+                            <input type="checkbox" name="repetition_wed" id="repetition_wed" {{ old('repetition_wed') || old('repetition_everyday') ? 'checked' : '' }} {{ old('repetition_everyday') ? 'disabled' : '' }}> 水
+                        </div>
+                        <div class="form_element_checkbox" style="margin-left: 160px;">
+                            <input type="checkbox" name="repetition_thu" id="repetition_thu" {{ old('repetition_thu') || old('repetition_everyday') ? 'checked' : '' }} {{ old('repetition_everyday') ? 'disabled' : '' }}> 木
+                        </div>
+                        <div class="form_element_checkbox" style="margin-left: 200px;">
+                            <input type="checkbox" name="repetition_fri" id="repetition_fri" {{ old('repetition_fri') || old('repetition_everyday') ? 'checked' : '' }} {{ old('repetition_everyday') ? 'disabled' : '' }}> 金
+                        </div>
+                        <div class="form_element_checkbox" style="margin-left: 240px;">
+                            <input type="checkbox" name="repetition_sat" id="repetition_sat" {{ old('repetition_sat') || old('repetition_everyday') ? 'checked' : '' }} {{ old('repetition_everyday') ? 'disabled' : '' }}> 土
+                        </div>
+                        <div class="form_element_checkbox" style="margin-left: 280px;">
+                            <input type="checkbox" name="repetition_everyday" id="repetition_everyday" onchange="changeStateReptationEveryday(this)" {{ old('repetition_everyday') ? 'checked' : '' }}> 毎日
                         </div>
                     </div>
                 </div>
@@ -134,9 +176,7 @@
             </div>
             <input type="hidden" name="id" id="id">
             <input type="hidden" name="list_status" id="list_status">
-            <input type="hidden" name="list_display_style" id="list_display_style">
-            <input type="hidden" name="list_begin" id="list_begin">
-            <input type="hidden" name="list_end" id="list_end">
+            <input type="hidden" name="list_repetition" id="list_repetition">
             <input type="hidden" name="status" id="status" value="{{ old('status') }}">
             <button type="submit">保存</button>
             &nbsp;
@@ -144,9 +184,7 @@
         </form>
         <form method="GET" id="back_list">
             <input type="hidden" name="list_status" id="list_status_back">
-            <input type="hidden" name="list_display_style" id="list_display_style_back">
-            <input type="hidden" name="list_begin" id="list_begin_back">
-            <input type="hidden" name="list_end" id="list_end_back">
+            <input type="hidden" name="list_repetition" id="list_repetition_back">
         <form>
     </div>
 </div>
@@ -161,10 +199,9 @@
             }
             echo "};\n";
             echo "document.getElementById('name').value = data['name'];\n";
-            echo "document.getElementById('begin_date').value = data['begin_time'].substr(0, 10);\n";
-            echo "document.getElementById('begin_time').value = data['begin_time'].substr(-8, 5);\n";
-            echo "document.getElementById('end_date').value = data['end_time'].substr(0, 10);\n";
-            echo "document.getElementById('end_time').value = data['end_time'].substr(-8, 5);\n";
+            echo "document.getElementById('repetition_begin_time').value = data['begin_time'].substr(-8, 5);\n";
+            echo "document.getElementById('repetition_end_date').value = data['elapsed_days'];\n";
+            echo "document.getElementById('repetition_end_time').value = data['end_time'].substr(-8, 5);\n";
             echo "document.getElementById('memo').value = data['memo'];\n";
             echo "document.getElementById('is_duplication').checked = data['is_duplication'];\n";
             echo "document.getElementById('color').value = data['color'];\n";
@@ -172,71 +209,58 @@
 
             echo "document.getElementById('id').value = '".$data['id']."';\n";
             echo "document.getElementById('list_status').value = '".$list_status."';\n";
-            echo "document.getElementById('list_display_style').value = '".$list_display_style."';\n";
-            echo "document.getElementById('list_begin').value = '".$list_begin."';\n";
-            echo "document.getElementById('list_end').value = '".$list_end."';\n";
+            echo "document.getElementById('list_repetition').value = '".$list_repetition."';\n";
 
             echo "document.getElementById('list_status_back').value = '".$list_status."';\n";
-            echo "document.getElementById('list_display_style_back').value = '".$list_display_style."';\n";
-            echo "document.getElementById('list_begin_back').value = '".$list_begin."';\n";
-            echo "document.getElementById('list_end_back').value = '".$list_end."';\n";
+            echo "document.getElementById('list_repetition_back').value = '".$list_repetition."';\n";
+
+            echo "viewRepetitionState(data['repetition']);\n";
         }
         else {
             echo "document.getElementById('id').value = '".old('id')."'\n";
             echo "document.getElementById('list_status').value = '".old('list_status')."'\n";
-            echo "document.getElementById('list_display_style').value = '".old('list_display_style')."'\n";
-            echo "document.getElementById('list_begin').value = '".old('list_begin')."'\n";
-            echo "document.getElementById('list_end').value = '".old('list_end')."'\n";
+            echo "document.getElementById('list_repetition').value = '".old('list_repetition')."'\n";
 
             echo "document.getElementById('list_status_back').value = '".old('list_status_back')."'\n";
-            echo "document.getElementById('list_display_style_back').value = '".old('list_display_style_back')."'\n";
-            echo "document.getElementById('list_begin_back').value = '".old('list_begin_back')."'\n";
-            echo "document.getElementById('list_end_back').value = '".old('list_end_back')."'\n";
+            echo "document.getElementById('list_repetition_back').value = '".old('list_repetition_back')."'\n";
         }
         ?>  
+        changeStateReptationEveryday(document.getElementById('repetition_everyday'));
     };
 
-    function listSetting(type) {
-        let list_status_element = document.getElementById('list_status' + type);
-        let list_display_style_element = document.getElementById('list_display_style' + type);
-        let list_begin_element = document.getElementById('list_begin' + type);
-        let list_end_element = document.getElementById('list_end' + type);
-        if(list_status_element.value == 'normal') {
-            if(list_display_style_element.value != 'custom') {
-                list_begin_element.remove();
-                list_end_element.remove();
-            }
-        }
-        else {
-            delete list_display_style_element.remove();
-            delete list_begin_element.remove();
-            delete list_end_element.remove();
-        }
-    }
-
     function backList() {
-        listSetting('_back');
         document.getElementById('back_list').action = "{{ route('schedule.list') }}";
         document.getElementById('back_list').submit();
     }
 
-    function changeEndDateLimit(){
-        document.getElementById("begin_date").max = document.getElementById("end_date").value;
-        document.getElementById("end_date").min = document.getElementById("begin_date").value;
+    function changeStateReptationEveryday(value){
+        var days=["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+        days.forEach(function(day) {
+            document.getElementById("repetition_"+day).disabled = value.checked;
+            document.getElementById("repetition_"+day).checked = value.checked;
+        });
     }
 
-    function changeEndTimeLimit(){
-        if(document.getElementById("begin_date").value === document.getElementById("end_date").value){
-            document.getElementById("end_time").min = document.getElementById("begin_time").value;
+    function changeRepetitionEndLimit() {
+        if(document.getElementById('repetition_end_date').value == 0) {
+            document.getElementById("repetition_end_time").min = document.getElementById("repetition_begin_time").value;
         }
         else{
-            document.getElementById("end_time").min = "";
+            document.getElementById("repetition_end_time").min = "";
         }
     }
 
-    function changeEndLimit() {
-        changeEndDateLimit();
-        changeEndTimeLimit();
+    function viewRepetitionState(repetition) {
+        let days = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+        days.forEach(function(day, index) {
+            if(repetition.substr(index, 1) == '1') {
+                document.getElementById('repetition_' + day).checked = true;
+            }
+        });
+        if(repetition == '1111111') {
+            document.getElementById('repetition_everyday').checked = true;
+            changeStateReptationEveryday(document.getElementById('repetition_everyday'));
+        }
     }
 </script>
 

@@ -139,13 +139,14 @@ class ScheduleController extends Controller
             return view('scheduleDetailNormal', ['list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'list_repetition' => $request->list_repetition, 'data' => $data, 'updated' => $request->updated]);
         }
         else if($request->list_status == 'repetition') {
-            $data = Schedule::select(['id', 'name', 'begin_time', 'end_time', 'repetition_state', 'memo', 'is_duplication', 'color'])->where('user_id', \Auth::user()->id)->where('id', $request->id)->first();
+            $data = Schedule::select(['id', 'name', 'begin_time', 'end_time', 'repetition_state', 'elapsed_days', 'memo', 'is_duplication', 'color'])->where('user_id', \Auth::user()->id)->where('id', $request->id)->first();
             $data = [
                 'id' => $data->id,
                 'name' => $data->name,
                 'begin_time' => $data->begin_time,
                 'end_time' => $data->end_time,
-                'repetition_state' => $data->repetition_state,
+                'repetition' => $data->repetition_state,
+                'elapsed_days' => $data->elapsed_days,
                 'memo' => $data->memo,
                 'is_duplication' => $data->is_duplication,
                 'color' => $data->color,
@@ -172,7 +173,19 @@ class ScheduleController extends Controller
             return view('scheduleEditNormal', ['list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'list_repetition' => $request->list_repetition, 'data' => $data]);
         }
         else if($request->list_status == 'repetition') {
-
+            $data = Schedule::select(['id', 'name', 'begin_time', 'end_time', 'repetition_state', 'elapsed_days', 'memo', 'is_duplication', 'color'])->where('user_id', \Auth::user()->id)->where('id', $request->id)->first();
+            $data = [
+                'id' => $data->id,
+                'name' => $data->name,
+                'begin_time' => $data->begin_time,
+                'end_time' => $data->end_time,
+                'repetition' => $data->repetition_state,
+                'elapsed_days' => $data->elapsed_days,
+                'memo' => $data->memo,
+                'is_duplication' => $data->is_duplication,
+                'color' => $data->color,
+            ];
+            return view('scheduleEditRepetition', ['list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'list_repetition' => $request->list_repetition, 'data' => $data]);
         }
         else if($request->list_status == 'template') {
 
@@ -337,15 +350,24 @@ class ScheduleController extends Controller
                 $content->is_duplication = $is_duplication;
                 $content->color = $request->color;
                 $content->save();
-                $request->merge(['updated' => true]);
-                return redirect(route('schedule.detail', ['id' => $request->id, 'list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'list_repetition' => $request->list_repetition, 'updated' => $request->updated]));
             }
             else if($request->list_status == 'repetition') {
-
+                $content->name = $request->name;
+                $content->begin_time = $repetition_begin;
+                $content->end_time = $repetition_end;
+                $content->repetition_state = $repetition_state;
+                $content->elapsed_days = $request->repetition_end_date;
+                $content->memo = $request->memo;
+                $content->is_duplication = $is_duplication;
+                $content->color = $request->color;
+                $content->save();
             }
             else if($request->list_status == 'template') {
     
             }
+
+            $request->merge(['updated' => true]);
+            return redirect(route('schedule.detail', ['id' => $request->id, 'list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'list_repetition' => $request->list_repetition, 'updated' => $request->updated]));
         }
     }
 }
