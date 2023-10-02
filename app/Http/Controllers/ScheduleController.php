@@ -187,15 +187,21 @@ class ScheduleController extends Controller
     }
 
     public function add(Request $request) {
-        if($request->input('begin_date')!=NULL && $request->input('begin_time')!=NULL) {
-            $request->merge([ 'begin' => $request->input('begin_date').' '.$request->input('begin_time').':00' ]);
+        if($request->begin_date != NULL && $request->begin_time != NULL) {
+            $request->merge([ 'begin' => $request->begin_date.' '.$request->begin_time.':00' ]);
+        }
+        else if($request->status != 'normal') {
+            $request->merge([ 'begin' => true ]);
         }
         else {
             $request->merge([ 'begin' => NULL ]);
         }
 
-        if($request->input('end_date')!=NULL && $request->input('end_time')!=NULL) {
-            $request->merge([ 'end' => $request->input('end_date').' '.$request->input('end_time').':00' ]);
+        if($request->end_date != NULL && $request->end_time != NULL) {
+            $request->merge([ 'end' => $request->end_date.' '.$request->end_time.':00' ]);
+        }
+        else if($request->status != 'normal') {
+            $request->merge([ 'end' => true ]);
         }
         else {
             $request->merge([ 'end' => NULL ]);
@@ -204,25 +210,32 @@ class ScheduleController extends Controller
         $begin = date_create($request->begin);
         $end = date_create($request->end);
 
-        if($begin < $end) {
-            $request->merge([ 'time_comparison' => true ]);
+        if($request->repetition_begin_time != NULL) {
+            $request->merge([ 'repetition_begin' => $request->repetition_begin_time.':00' ]);
+        }
+        else if($request->status == 'normal') {
+            $request->merge([ 'repetition_begin' => true ]);
         }
         else {
-            $request->merge([ 'time_comparison' => NULL ]);
+            $request->merge([ 'repetition_begin' => NULL ]);
         }
+
+        if($request->repetition_end_time != NULL) {
+            $request->merge([ 'repetition_end' => $request->repetition_end_time.':00' ]);
+        }
+        else if($request->status == 'normal') {
+            $request->merge([ 'repetition_end' => true ]);
+        }
+        else {
+            $request->merge([ 'repetition_end' => NULL ]);
+        }
+
+        $repetition_begin = date_create($request->repetition_begin);
+        $repetition_end = date_create($request->repetition_end);
 
         if(!$request->has('template_name')) {
             $request->merge([ 'template_name' => '' ]);
         }
-
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'begin' => ['required'],
-            'end' => ['required'],
-            'memo' => ['nullable', 'string', 'max:255'],
-            'template_name' => ['nullable', 'string', 'max:255'],
-            'time_comparison' => ['required']
-        ]);
 
         $repetition_state = "";
         $days=["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
@@ -232,68 +245,82 @@ class ScheduleController extends Controller
             }
             else $repetition_state .= "0";
         }
-        if(!$request->input("is_repetition")) {
+        if($request->status != 'repetition') {
             $repetition_state = "0000000";
         }
         if($request->input("repetition_everyday")) {
             $repetition_state = "1111111";
         }
 
+        if($request->status == 'repetition' && $repetition_state == "0000000") {
+            $request->merge([ 'repetition_setting' => NULL ]);
+        }
+        else {
+            $request->merge([ 'repetition_setting' => true ]);
+        }
+
         if($request->input('is_duplication') == NULL) $is_duplication = false;
         else $is_duplication = true;
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'begin' => ['required'],
+            'end' => ['required'],
+            'repetition_begin' => ['required'],
+            'repetition_end' => ['required'],
+            'repetition_setting' => ['required'],
+            'memo' => ['nullable', 'string', 'max:255'],
+            'template_name' => ['nullable', 'string', 'max:255'],
+        ]);
 
         //新規登録の場合
         if(!$request->has('id')) {
 
-            if($request->input("is_repetition") || $request->input("is_template")) {
-                $elapsed_days = (int)date_create(date_format($begin, 'Y-m-d'))->diff(date_create(date_format($end, 'Y-m-d')))->format('%a');
-
-                //繰り返しとして登録する場合
-                if($request->input("is_repetition")) {
-                    Schedule::create([
-                        'user_id' => \Auth::user()->id,
-                        'status' => 'repetition',
-                        'name' => $request->input('name'),
-                        'begin_time' => $begin,
-                        'end_time' => $end,
-                        'repetition_state' => $repetition_state,
-                        'elapsed_days' => $elapsed_days,
-                        'memo' => $request->input('memo'),
-                        'is_duplication' => $is_duplication,
-                        'color' => $request->input('color'),
-                    ]);
-                }
-
-                //テンプレートとして登録する場合
-                if($request->input("is_template")) {
-                    Schedule::create([
-                        'user_id' => \Auth::user()->id,
-                        'status' => 'template',
-                        'name' => $request->input('name'),
-                        'begin_time' => $begin,
-                        'end_time' => $end,
-                        'repetition_state' => $repetition_state,
-                        'elapsed_days' => $elapsed_days,
-                        'memo' => $request->input('memo'),
-                        'is_duplication' => $is_duplication,
-                        'color' => $request->input('color'),
-                        'template_name' => $request->input('template_name'),
-                    ]);
-                }
-            }
-
             //通常のスケジュールとして登録する場合
-            else {
+            if($request->status == 'normal') {
                 Schedule::create([
                     'user_id' => \Auth::user()->id,
                     'status' => 'normal',
-                    'name' => $request->input('name'),
+                    'name' => $request->name,
                     'begin_time' => $begin,
                     'end_time' => $end,
                     'repetition_state' => $repetition_state,
-                    'memo' => $request->input('memo'),
+                    'memo' => $request->memo,
                     'is_duplication' => $is_duplication,
-                    'color' => $request->input('color'),
+                    'color' => $request->color,
+                ]);
+            }
+
+            //繰り返しとして登録する場合
+            else if($request->status == 'repetition') {
+                Schedule::create([
+                    'user_id' => \Auth::user()->id,
+                    'status' => 'repetition',
+                    'name' => $request->name,
+                    'begin_time' => $repetition_begin,
+                    'end_time' => $repetition_end,
+                    'repetition_state' => $repetition_state,
+                    'elapsed_days' => $request->repetition_end_date,
+                    'memo' => $request->memo,
+                    'is_duplication' => $is_duplication,
+                    'color' => $request->color,
+                ]);
+            }
+
+            //テンプレートとして登録する場合
+            else if($request->status == 'template') {
+                Schedule::create([
+                    'user_id' => \Auth::user()->id,
+                    'status' => 'template',
+                    'name' => $request->name,
+                    'begin_time' => $repetition_begin,
+                    'end_time' => $repetition_end,
+                    'repetition_state' => $repetition_state,
+                    'elapsed_days' => $request->repetition_end_date,
+                    'memo' => $request->memo,
+                    'is_duplication' => $is_duplication,
+                    'color' => $request->color,
+                    'template_name' => $request->template_name,
                 ]);
             }
 

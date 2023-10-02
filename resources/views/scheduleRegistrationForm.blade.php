@@ -8,10 +8,31 @@
             スケジュール 新規登録
         </div>
     </div>
+    
     <div class="registration_form_content">
         <form method="POST" action="{{ route('schedule.add') }}" class="registration_form_content">
             @csrf
-
+            <div class="form_elements">
+                <div class="form_element_name">
+                    <div class="form_element_content">
+                        形式<br>
+                    </div>
+                </div>
+                <div class="form_element_input_no_error">
+                    <div class="form_element_value" style="display: flex;">
+                        <div class="form_element_checkbox">
+                            <input type="checkbox" id="normal_form_style" onclick="changeStatus('normal')" checked disabled><label for="normal_form">スケジュール</label>
+                        </div>
+                        <div class="form_element_checkbox" style="margin-left: 110px;">
+                            <input type="checkbox" id="repetition_form_style" onclick="changeStatus('repetition')"><label for="repetition_form">繰り返し</label>
+                        </div>
+                        <div class="form_element_checkbox" style="margin-left: 190px;">
+                            <input type="checkbox" id="template_form_style" onclick="changeStatus('template')"><label for="template_form">テンプレート</label>
+                        </div>
+                        <input type="hidden" name="status" id="status" value="normal">
+                    </div>
+                </div>
+            </div>
             <div class="form_elements">
                 <div class="form_element_name">
                     <div class="form_element_content">
@@ -34,7 +55,7 @@
                     </div>
                 </div>
             </div>
-            <div class="form_elements">
+            <div class="form_elements" id="normal_begin_form">
                 <div class="form_element_name">
                     <div class="form_element_content">
                         開始時刻<br>
@@ -60,7 +81,7 @@
                     </div>
                 </div>
             </div>
-            <div class="form_elements">
+            <div class="form_elements" id="normal_end_form">
                 <div class="form_element_name">
                     <div class="form_element_content">
                         終了時刻<br>
@@ -86,49 +107,95 @@
                     </div>
                 </div>
             </div>
-            <div class="form_elements">
+            <div class="form_elements" id="repetition_begin_form" hidden>
                 <div class="form_element_name">
                     <div class="form_element_content">
-                        繰り返し設定する<br>
+                        開始時刻<br>
                     </div>
                 </div>
-                <div class="form_element_input_no_error">
-                    <div class="form_element_value">
-                        <input type="checkbox" name="is_repetition" class="form_element_checkbox" onchange="changStateRepetition(this)" {{ old('is_repetition') == 'on' ? 'checked' : '' }}>
+                <div class="form_element_input_base">
+                    <div class="form_element_error">
+                        @if ($errors->has('repetition_begin'))
+                            <!--<span class="invalid-feedback" role="alert">-->
+                            <span style="color: red;" role="alert">
+                                {{ $errors->first('repetition_begin') }}
+                            </span>
+                        @endif
+                    </div>
+                    <div class="form_element_input">
+                        <div class="form_element_value">
+                            <div class="form_element_time">
+                                <input type="time" name="repetition_begin_time" id="repetition_begin_time" value="{{ old('repetition_begin_time') }}" onchange="changeRepetitionEndLimit()">
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="form_elements" id="repetition_form" {{ old('is_repetition') == 'on' ? '' : 'hidden' }}>
+            <div class="form_elements" id="repetition_end_form" hidden>
+                <div class="form_element_name">
+                    <div class="form_element_content">
+                        終了時刻<br>
+                    </div>
+                </div>
+                <div class="form_element_input_base">
+                    <div class="form_element_error">
+                        @if ($errors->has('repetition_end'))
+                            <!--<span class="invalid-feedback" role="alert">-->
+                            <span style="color: red;" role="alert">
+                                {{ $errors->first('repetition_end') }}
+                            </span>
+                        @endif
+                    </div>
+                    <div class="form_element_input">
+                        <div class="form_element_value">
+                            <div class="form_element_time">
+                                <input type="number" name="repetition_end_date" id="repetition_end_date" style="width: 20%" value="{{ old('repetition_end_date') ? old('repetition_end_date') : '0' }}" min="0" onchange="changeRepetitionEndLimit()">日後の
+                                &nbsp;
+                                <input type="time" name="repetition_end_time" id="repetition_end_time" value="{{ old('repetition_end_time') }}" onchange="changeRepetitionEndLimit()">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form_elements" id="repetition_form" {{ old('is_repetition') ? '' : 'hidden' }}>
                 <div class="form_element_name">
                     <div class="form_element_content">
                         繰り返し設定<br>
                     </div>
                 </div>
-                <div class="form_element_input_no_error">
+                <div class="form_element_input_base">
+                    <div class="form_element_error">
+                        @if ($errors->has('repetition_setting'))
+                            <!--<span class="invalid-feedback" role="alert">-->
+                            <span style="color: red;" role="alert">
+                                {{ $errors->first('repetition_setting') }}
+                            </span>
+                        @endif
+                    </div>
                     <div class="form_element_value" style="display: flex;">
                         <div class="form_element_checkbox">
-                            <input type="checkbox" name="repetition_sun" id="repetition_sun" {{ old('repetition_sun') == 'on' || old('repetition_everyday') == 'on' ? 'checked' : '' }} {{ old('repetition_everyday') == 'on' ? 'disabled' : '' }}> 日
+                            <input type="checkbox" name="repetition_sun" id="repetition_sun" {{ old('repetition_sun') || old('repetition_everyday') ? 'checked' : '' }} {{ old('repetition_everyday') ? 'disabled' : '' }}> 日
                         </div>
                         <div class="form_element_checkbox" style="margin-left: 40px;">
-                            <input type="checkbox" name="repetition_mon" id="repetition_mon" {{ old('repetition_mon') == 'on' || old('repetition_everyday') == 'on' ? 'checked' : '' }} {{ old('repetition_everyday') == 'on' ? 'disabled' : '' }}> 月
+                            <input type="checkbox" name="repetition_mon" id="repetition_mon" {{ old('repetition_mon') || old('repetition_everyday') ? 'checked' : '' }} {{ old('repetition_everyday') ? 'disabled' : '' }}> 月
                         </div>
                         <div class="form_element_checkbox" style="margin-left: 80px;">
-                            <input type="checkbox" name="repetition_tue" id="repetition_tue" {{ old('repetition_tue') == 'on' || old('repetition_everyday') == 'on' ? 'checked' : '' }} {{ old('repetition_everyday') == 'on' ? 'disabled' : '' }}> 火
+                            <input type="checkbox" name="repetition_tue" id="repetition_tue" {{ old('repetition_tue') || old('repetition_everyday') ? 'checked' : '' }} {{ old('repetition_everyday') ? 'disabled' : '' }}> 火
                         </div>
                         <div class="form_element_checkbox" style="margin-left: 120px;">
-                            <input type="checkbox" name="repetition_wed" id="repetition_wed" {{ old('repetition_wed') == 'on' || old('repetition_everyday') == 'on' ? 'checked' : '' }} {{ old('repetition_everyday') == 'on' ? 'disabled' : '' }}> 水
+                            <input type="checkbox" name="repetition_wed" id="repetition_wed" {{ old('repetition_wed') || old('repetition_everyday') ? 'checked' : '' }} {{ old('repetition_everyday') ? 'disabled' : '' }}> 水
                         </div>
                         <div class="form_element_checkbox" style="margin-left: 160px;">
-                            <input type="checkbox" name="repetition_thu" id="repetition_thu" {{ old('repetition_thu') == 'on' || old('repetition_everyday') == 'on' ? 'checked' : '' }} {{ old('repetition_everyday') == 'on' ? 'disabled' : '' }}> 木
+                            <input type="checkbox" name="repetition_thu" id="repetition_thu" {{ old('repetition_thu') || old('repetition_everyday') ? 'checked' : '' }} {{ old('repetition_everyday') ? 'disabled' : '' }}> 木
                         </div>
                         <div class="form_element_checkbox" style="margin-left: 200px;">
-                            <input type="checkbox" name="repetition_fri" id="repetition_fri" {{ old('repetition_fri') == 'on' || old('repetition_everyday') == 'on' ? 'checked' : '' }} {{ old('repetition_everyday') == 'on' ? 'disabled' : '' }}> 金
+                            <input type="checkbox" name="repetition_fri" id="repetition_fri" {{ old('repetition_fri') || old('repetition_everyday') ? 'checked' : '' }} {{ old('repetition_everyday') ? 'disabled' : '' }}> 金
                         </div>
                         <div class="form_element_checkbox" style="margin-left: 240px;">
-                            <input type="checkbox" name="repetition_sat" id="repetition_sat" {{ old('repetition_sat') == 'on' || old('repetition_everyday') == 'on' ? 'checked' : '' }} {{ old('repetition_everyday') == 'on' ? 'disabled' : '' }}> 土
+                            <input type="checkbox" name="repetition_sat" id="repetition_sat" {{ old('repetition_sat') || old('repetition_everyday') ? 'checked' : '' }} {{ old('repetition_everyday') ? 'disabled' : '' }}> 土
                         </div>
                         <div class="form_element_checkbox" style="margin-left: 280px;">
-                            <input type="checkbox" name="repetition_everyday" onchange="changeStateReptationEveryday(this)" {{ old('repetition_everyday') == 'on' ? 'checked' : '' }}> 毎日
+                            <input type="checkbox" name="repetition_everyday" onchange="changeStateReptationEveryday(this)" {{ old('repetition_everyday') ? 'checked' : '' }}> 毎日
                         </div>
                     </div>
                 </div>
@@ -201,19 +268,7 @@
                     </div>
                 </div>
             </div>
-            <div class="form_elements">
-                <div class="form_element_name">
-                    <div class="form_element_content">
-                        テンプレートとして作成<br>
-                    </div>
-                </div>
-                <div class="form_element_input_no_error">
-                    <div class="form_element_value">
-                        <input type="checkbox" name="is_template" class="form_element_checkbox" onchange="changStateTemplate(this)" {{ old('is_template') == 'on' ? 'checked' : '' }}>
-                    </div>
-                </div>
-            </div>
-            <div class="form_elements" id="template_form" {{ old('is_template') == 'on' ? '' : 'hidden' }}>
+            <div class="form_elements" id="template_form" {{ old('is_template') ? '' : 'hidden' }}>
                 <div class="form_element_name">
                     <div class="form_element_content">
                         テンプレート名<br>
@@ -241,6 +296,10 @@
 </div>
 
 <script>
+    window.onload = function() {
+        changeStatus("{{ old('status') }}");
+    };
+
     function changStateRepetition(value){
         document.getElementById("repetition_form").hidden = !value.checked;
     }
@@ -274,6 +333,52 @@
     function changeEndLimit() {
         changeEndDateLimit();
         changeEndTimeLimit();
+    }
+
+    function changeRepetitionEndLimit() {
+        if(document.getElementById('repetition_end_date').value == 0) {
+            document.getElementById("repetition_end_time").min = document.getElementById("repetition_begin_time").value;
+        }
+        else{
+            document.getElementById("repetition_end_time").min = "";
+        }
+    }
+
+    function changeStatus(status) {
+        if(status == '') return;
+        if(document.getElementById('status').value == 'normal') {
+            document.getElementById('normal_begin_form').hidden = true;
+            document.getElementById('normal_end_form').hidden = true;
+        }
+        else if(document.getElementById('status').value == 'repetition') {
+            document.getElementById('repetition_form').hidden = true;
+            document.getElementById('repetition_begin_form').hidden = true;
+            document.getElementById('repetition_end_form').hidden = true;
+        }
+        else if(document.getElementById('status').value == 'template') {
+            document.getElementById('template_form').hidden = true;
+            document.getElementById('repetition_begin_form').hidden = true;
+            document.getElementById('repetition_end_form').hidden = true;
+        }
+        document.getElementById(document.getElementById('status').value + '_form_style').checked = false;
+        document.getElementById(document.getElementById('status').value + '_form_style').disabled = false;
+        document.getElementById('status').value = status;
+        document.getElementById(status + '_form_style').checked = true;
+        document.getElementById(status + '_form_style').disabled = true;
+        if(document.getElementById('status').value == 'normal') {
+            document.getElementById('normal_begin_form').hidden = false;
+            document.getElementById('normal_end_form').hidden = false;
+        }
+        else if(document.getElementById('status').value == 'repetition') {
+            document.getElementById('repetition_form').hidden = false;
+            document.getElementById('repetition_begin_form').hidden = false;
+            document.getElementById('repetition_end_form').hidden = false;
+        }
+        else if(document.getElementById('status').value == 'template') {
+            document.getElementById('template_form').hidden = false;
+            document.getElementById('repetition_begin_form').hidden = false;
+            document.getElementById('repetition_end_form').hidden = false;
+        }
     }
 </script>
 
