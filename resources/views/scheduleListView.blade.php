@@ -102,7 +102,7 @@
     ?>];
 
     window.onload = function() {
-        document.getElementById('{{ $list_status }}' + '_view').checked = true;
+        document.getElementById('{{ $list_status ? $list_status : "normal" }}' + '_view').checked = true;
         document.getElementById('list_status').value = '{{ $list_status }}';
         if('{{ $list_status }}' == 'normal') {
             document.getElementById('{{ $list_display_style }}').checked = true;
@@ -147,6 +147,12 @@
                 displayRepetition(schedule_data[i]['name'], schedule_data[i]['repetition'], schedule_data[i]['id']);
             }
         }
+        if('{{ $list_status }}' == 'template') {
+            displayTemplate('テンプレート名', '0');
+            for(let i = 0; i < schedule_data.length; i++) {
+                displayTemplate(schedule_data[i]['name'], schedule_data[i]['id']);
+            }
+        }
         document.getElementById('list_status_detail').value = '{{ $list_status }}';
         document.getElementById('list_display_style_detail').value = '{{ $list_display_style }}';
         document.getElementById('list_begin_detail').value = '{{ $list_begin }}';
@@ -167,14 +173,16 @@
 
     function changeStatus(type) {
         let list_status = document.getElementById('list_status');
-        let prev = document.getElementById(list_status.value + '_view');
-        if(list_status.value == type) return;
+        let status_name = list_status.value;
+        if(status_name == '') status_name = 'normal';
+        let prev = document.getElementById(status_name + '_view');
+        if(status_name == type) return;
         prev.checked = false;
-        if(list_status.value == 'normal') {
+        if(status_name == 'normal') {
             document.getElementById('detail_normal').hidden = true;
             document.getElementById('detail_custom').hidden = true;
         }
-        else if(list_status.value == 'repetition') {
+        else if(status_name == 'repetition') {
             document.getElementById('detail_repetition').hidden = true;
         }
         list_status.value = type;
@@ -386,6 +394,55 @@
         delete_parent.appendChild(delete_child);
         content.appendChild(name_parent);
         content.appendChild(repetition_parent);
+        content.appendChild(detail_parent);
+        content.appendChild(delete_parent);
+        document.getElementById('view_form_content').appendChild(content);
+    }
+
+    function displayTemplate(name, id) {
+        let content = document.createElement('div');
+        content.className = 'view_content';
+        let name_parent = document.createElement('div');
+        name_parent.className = 'view_schedule_contents_template_parent';
+        let name_child = document.createElement('div');
+        name_child.className = 'view_contents_child';
+        name_child.innerText = name;
+        name_parent.appendChild(name_child);
+        let detail_parent = document.createElement('div');
+        detail_parent.className = 'view_detail_parent';
+        let detail_child = document.createElement('div');
+        detail_child.className = 'view_contents_child';
+        if(id == '0') {
+            detail_child.innerText = '詳細';
+        }
+        else {
+            let detail_button = document.createElement('button');
+            detail_button.type = 'button';
+            detail_button.innerText = '詳細';
+            detail_button.addEventListener('click', (event) => {
+                showDetailSchedule(id);
+            });
+            detail_child.appendChild(detail_button);
+        }
+        detail_parent.appendChild(detail_child);
+        let delete_parent = document.createElement('div');
+        delete_parent.className = 'view_delete_parent';
+        let delete_child = document.createElement('div');
+        delete_child.className = 'view_contents_child';
+        if(id == '0') {
+            delete_child.innerText = '削除';
+        }
+        else {
+            let delete_button = document.createElement('button');
+            delete_button.type = 'button';
+            delete_button.innerText = '削除';
+            delete_button.addEventListener('click', (event) => {
+                deleteSchedule(id);
+            });
+            delete_child.appendChild(delete_button);
+        }
+        delete_parent.appendChild(delete_child);
+        content.appendChild(name_parent);
         content.appendChild(detail_parent);
         content.appendChild(delete_parent);
         document.getElementById('view_form_content').appendChild(content);

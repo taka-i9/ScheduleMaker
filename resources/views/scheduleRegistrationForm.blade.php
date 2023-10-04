@@ -33,6 +33,28 @@
                     </div>
                 </div>
             </div>
+            <div class="form_elements" id="template_form" {{ old('is_template') ? '' : 'hidden' }}>
+                <div class="form_element_name">
+                    <div class="form_element_content">
+                        テンプレート名<br>
+                    </div>
+                </div>
+                <div class="form_element_input_base">
+                    <div class="form_element_error">
+                        @if ($errors->has('template_name'))
+                            <!--<span class="invalid-feedback" role="alert">-->
+                            <span style="color: red;" role="alert">
+                                {{ $errors->first('template_name') }}
+                            </span>
+                        @endif
+                    </div>
+                    <div class="form_element_input">
+                        <div class="form_element_value">
+                            <input type="text" name="template_name" class="form_element_text" value="{{ old('template_name') }}">
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="form_elements">
                 <div class="form_element_name">
                     <div class="form_element_content">
@@ -265,28 +287,6 @@
                 <div class="form_element_input_no_error">
                     <div class="form_element_value">
                         <input type="color" name="color" class="form_element_color" value="{{ old('color') == '' ? '#ffffff' : old('color') }}">
-                    </div>
-                </div>
-            </div>
-            <div class="form_elements" id="template_form" {{ old('is_template') ? '' : 'hidden' }}>
-                <div class="form_element_name">
-                    <div class="form_element_content">
-                        テンプレート名<br>
-                    </div>
-                </div>
-                <div class="form_element_input_base">
-                    <div class="form_element_error">
-                        @if ($errors->has('template_name'))
-                            <!--<span class="invalid-feedback" role="alert">-->
-                            <span style="color: red;" role="alert">
-                                {{ $errors->first('template_name') }}
-                            </span>
-                        @endif
-                    </div>
-                    <div class="form_element_input">
-                        <div class="form_element_value">
-                            <input type="text" name="template_name" class="form_element_text" value="{{ old('template_name') }}">
-                        </div>
                     </div>
                 </div>
             </div>

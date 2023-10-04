@@ -188,12 +188,12 @@
             echo "document.getElementById('list_begin').value = '".old('list_begin')."'\n";
             echo "document.getElementById('list_end').value = '".old('list_end')."'\n";
 
-            echo "document.getElementById('list_status_back').value = '".old('list_status_back')."'\n";
-            echo "document.getElementById('list_display_style_back').value = '".old('list_display_style_back')."'\n";
-            echo "document.getElementById('list_begin_back').value = '".old('list_begin_back')."'\n";
-            echo "document.getElementById('list_end_back').value = '".old('list_end_back')."'\n";
+            echo "document.getElementById('list_status_back').value = '".old('list_status')."'\n";
+            echo "document.getElementById('list_display_style_back').value = '".old('list_display_style')."'\n";
+            echo "document.getElementById('list_begin_back').value = '".old('list_begin')."'\n";
+            echo "document.getElementById('list_end_back').value = '".old('list_end')."'\n";
         }
-        ?>  
+        ?>
     };
 
     function listSetting(type) {

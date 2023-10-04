@@ -295,6 +295,14 @@
     border-color: black;
 }
 
+.view_schedule_contents_template_parent {
+    width: 75%;
+    height: 100%;
+    position: relative;
+    border-right: solid;
+    border-color: black;
+}
+
 .view_detail_parent {
     width: 13%;
     height: 100%;

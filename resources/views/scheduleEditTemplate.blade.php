@@ -13,6 +13,28 @@
         <form method="POST" action="{{ route('schedule.add') }}" class="registration_form_content">
             @csrf
 
+            <div class="form_elements" id="template_form">
+                <div class="form_element_name">
+                    <div class="form_element_content">
+                        テンプレート名<br>
+                    </div>
+                </div>
+                <div class="form_element_input_base">
+                    <div class="form_element_error">
+                        @if ($errors->has('template_name'))
+                            <!--<span class="invalid-feedback" role="alert">-->
+                            <span style="color: red;" role="alert">
+                                {{ $errors->first('template_name') }}
+                            </span>
+                        @endif
+                    </div>
+                    <div class="form_element_input">
+                        <div class="form_element_value">
+                            <input type="text" name="template_name" id="template_name" class="form_element_text" value="{{ old('template_name') }}">
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="form_elements">
                 <div class="form_element_name">
                     <div class="form_element_content">
@@ -85,49 +107,6 @@
                     </div>
                 </div>
             </div>
-            <div class="form_elements" id="repetition_form">
-                <div class="form_element_name">
-                    <div class="form_element_content">
-                        繰り返し設定<br>
-                    </div>
-                </div>
-                <div class="form_element_input_base">
-                    <div class="form_element_error">
-                        @if ($errors->has('repetition_setting'))
-                            <!--<span class="invalid-feedback" role="alert">-->
-                            <span style="color: red;" role="alert">
-                                {{ $errors->first('repetition_setting') }}
-                            </span>
-                        @endif
-                    </div>
-                    <div class="form_element_value" style="display: flex;">
-                        <div class="form_element_checkbox">
-                            <input type="checkbox" name="repetition_sun" id="repetition_sun" {{ old('repetition_sun') || old('repetition_everyday') ? 'checked' : '' }} {{ old('repetition_everyday') ? 'disabled' : '' }}> 日
-                        </div>
-                        <div class="form_element_checkbox" style="margin-left: 40px;">
-                            <input type="checkbox" name="repetition_mon" id="repetition_mon" {{ old('repetition_mon') || old('repetition_everyday') ? 'checked' : '' }} {{ old('repetition_everyday') ? 'disabled' : '' }}> 月
-                        </div>
-                        <div class="form_element_checkbox" style="margin-left: 80px;">
-                            <input type="checkbox" name="repetition_tue" id="repetition_tue" {{ old('repetition_tue') || old('repetition_everyday') ? 'checked' : '' }} {{ old('repetition_everyday') ? 'disabled' : '' }}> 火
-                        </div>
-                        <div class="form_element_checkbox" style="margin-left: 120px;">
-                            <input type="checkbox" name="repetition_wed" id="repetition_wed" {{ old('repetition_wed') || old('repetition_everyday') ? 'checked' : '' }} {{ old('repetition_everyday') ? 'disabled' : '' }}> 水
-                        </div>
-                        <div class="form_element_checkbox" style="margin-left: 160px;">
-                            <input type="checkbox" name="repetition_thu" id="repetition_thu" {{ old('repetition_thu') || old('repetition_everyday') ? 'checked' : '' }} {{ old('repetition_everyday') ? 'disabled' : '' }}> 木
-                        </div>
-                        <div class="form_element_checkbox" style="margin-left: 200px;">
-                            <input type="checkbox" name="repetition_fri" id="repetition_fri" {{ old('repetition_fri') || old('repetition_everyday') ? 'checked' : '' }} {{ old('repetition_everyday') ? 'disabled' : '' }}> 金
-                        </div>
-                        <div class="form_element_checkbox" style="margin-left: 240px;">
-                            <input type="checkbox" name="repetition_sat" id="repetition_sat" {{ old('repetition_sat') || old('repetition_everyday') ? 'checked' : '' }} {{ old('repetition_everyday') ? 'disabled' : '' }}> 土
-                        </div>
-                        <div class="form_element_checkbox" style="margin-left: 280px;">
-                            <input type="checkbox" name="repetition_everyday" id="repetition_everyday" onchange="changeStateReptationEveryday(this)" {{ old('repetition_everyday') ? 'checked' : '' }}> 毎日
-                        </div>
-                    </div>
-                </div>
-            </div>
             <div class="form_elements">
                 <div class="form_element_name">
                     <div class="form_element_content">
@@ -176,7 +155,6 @@
             </div>
             <input type="hidden" name="id" id="id">
             <input type="hidden" name="list_status" id="list_status">
-            <input type="hidden" name="list_repetition" id="list_repetition">
             <input type="hidden" name="status" id="status" value="{{ old('status') }}">
             <button type="submit">保存</button>
             &nbsp;
@@ -184,7 +162,6 @@
         </form>
         <form method="GET" id="back_list">
             <input type="hidden" name="list_status" id="list_status_back">
-            <input type="hidden" name="list_repetition" id="list_repetition_back">
         <form>
     </div>
 </div>
@@ -198,6 +175,7 @@
                 echo '"'.$key.'": "'.$value.'",';
             }
             echo "};\n";
+            echo "document.getElementById('template_name').value = data['template_name']\n";
             echo "document.getElementById('name').value = data['name'];\n";
             echo "document.getElementById('repetition_begin_time').value = data['begin_time'].substr(-8, 5);\n";
             echo "document.getElementById('repetition_end_date').value = data['elapsed_days'];\n";
@@ -209,36 +187,21 @@
 
             echo "document.getElementById('id').value = '".$data['id']."';\n";
             echo "document.getElementById('list_status').value = '".$list_status."';\n";
-            echo "document.getElementById('list_repetition').value = '".$list_repetition."';\n";
 
             echo "document.getElementById('list_status_back').value = '".$list_status."';\n";
-            echo "document.getElementById('list_repetition_back').value = '".$list_repetition."';\n";
-
-            echo "viewRepetitionState(data['repetition']);\n";
         }
         else {
             echo "document.getElementById('id').value = '".old('id')."'\n";
             echo "document.getElementById('list_status').value = '".old('list_status')."'\n";
-            echo "document.getElementById('list_repetition').value = '".old('list_repetition')."'\n";
 
             echo "document.getElementById('list_status_back').value = '".old('list_status')."'\n";
-            echo "document.getElementById('list_repetition_back').value = '".old('list_repetition')."'\n";
         }
-        ?>  
-        changeStateReptationEveryday(document.getElementById('repetition_everyday'));
+        ?>
     };
 
     function backList() {
         document.getElementById('back_list').action = "{{ route('schedule.list') }}";
         document.getElementById('back_list').submit();
-    }
-
-    function changeStateReptationEveryday(value){
-        var days=["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
-        days.forEach(function(day) {
-            document.getElementById("repetition_"+day).disabled = value.checked;
-            document.getElementById("repetition_"+day).checked = value.checked;
-        });
     }
 
     function changeRepetitionEndLimit() {
@@ -247,19 +210,6 @@
         }
         else{
             document.getElementById("repetition_end_time").min = "";
-        }
-    }
-
-    function viewRepetitionState(repetition) {
-        let days = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
-        days.forEach(function(day, index) {
-            if(repetition.substr(index, 1) == '1') {
-                document.getElementById('repetition_' + day).checked = true;
-            }
-        });
-        if(repetition == '1111111') {
-            document.getElementById('repetition_everyday').checked = true;
-            changeStateReptationEveryday(document.getElementById('repetition_everyday'));
         }
     }
 </script>
