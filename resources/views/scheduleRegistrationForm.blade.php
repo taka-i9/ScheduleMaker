@@ -33,7 +33,7 @@
                     </div>
                 </div>
             </div>
-            <div class="form_elements" id="template_form" {{ old('is_template') ? '' : 'hidden' }}>
+            <div class="form_elements" id="template_form" hidden>
                 <div class="form_element_name">
                     <div class="form_element_content">
                         テンプレート名<br>

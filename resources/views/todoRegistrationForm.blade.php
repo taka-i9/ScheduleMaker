@@ -15,6 +15,49 @@
             <div class="form_elements">
                 <div class="form_element_name">
                     <div class="form_element_content">
+                        形式<br>
+                    </div>
+                </div>
+                <div class="form_element_input_no_error">
+                    <div class="form_element_value" style="display: flex;">
+                        <div class="form_element_checkbox">
+                            <input type="checkbox" id="normal_form_style" onclick="changeStatus('normal')" checked disabled><label for="normal_form">スケジュール</label>
+                        </div>
+                        <div class="form_element_checkbox" style="margin-left: 110px;">
+                            <input type="checkbox" id="repetition_form_style" onclick="changeStatus('repetition')"><label for="repetition_form">繰り返し</label>
+                        </div>
+                        <div class="form_element_checkbox" style="margin-left: 190px;">
+                            <input type="checkbox" id="template_form_style" onclick="changeStatus('template')"><label for="template_form">テンプレート</label>
+                        </div>
+                        <input type="hidden" name="status" id="status" value="normal">
+                    </div>
+                </div>
+            </div>
+            <div class="form_elements" id="template_form" hidden>
+                <div class="form_element_name">
+                    <div class="form_element_content">
+                        テンプレート名<br>
+                    </div>
+                </div>
+                <div class="form_element_input_base">
+                    <div class="form_element_error">
+                        @if ($errors->has('template_name'))
+                            <!--<span class="invalid-feedback" role="alert">-->
+                            <span style="color: red;" role="alert">
+                                {{ $errors->first('template_name') }}
+                            </span>
+                        @endif
+                    </div>
+                    <div class="form_element_input">
+                        <div class="form_element_value">
+                            <input type="text" name="template_name" class="form_element_text" value="{{ old('template_name') }}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form_elements">
+                <div class="form_element_name">
+                    <div class="form_element_content">
                         スケジュール名<br>
                     </div>
                 </div>
@@ -34,7 +77,7 @@
                     </div>
                 </div>
             </div>
-            <div class="form_elements">
+            <div class="form_elements" id="normal_deadline_form">
                 <div class="form_element_name">
                     <div class="form_element_content">
                         期限<br>
@@ -55,6 +98,30 @@
                                 <input type="date" name="deadline_date" id="deadline_date" value="{{ old('deadline_date') }}">
                                 &nbsp;
                                 <input type="time" name="deadline_time" id="deadline_time" value="{{ old('deadline_time') }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form_elements" id="repetition_deadline_form" hidden>
+                <div class="form_element_name">
+                    <div class="form_element_content">
+                        期限<br>
+                    </div>
+                </div>
+                <div class="form_element_input_base">
+                    <div class="form_element_error">
+                        @if ($errors->has('repetition_deadline'))
+                            <!--<span class="invalid-feedback" role="alert">-->
+                            <span style="color: red;" role="alert">
+                                {{ $errors->first('repetition_deadline') }}
+                            </span>
+                        @endif
+                    </div>
+                    <div class="form_element_input">
+                        <div class="form_element_value">
+                            <div class="form_element_time">
+                                <input type="time" name="repetition_deadline_time" id="repetition_deadline_time" value="{{ old('repetition_deadline_time') }}">
                             </div>
                         </div>
                     </div>
@@ -100,25 +167,21 @@
                     </div>
                 </div>
             </div>
-            <div class="form_elements">
-                <div class="form_element_name">
-                    <div class="form_element_content">
-                        繰り返し設定する<br>
-                    </div>
-                </div>
-                <div class="form_element_input_no_error">
-                    <div class="form_element_value">
-                        <input type="checkbox" name="is_repetition" class="form_element_checkbox" onchange="changStateRepetition(this)" {{ old('is_repetition') == 'on' ? 'checked' : '' }}>
-                    </div>
-                </div>
-            </div>
-            <div class="form_elements" id="repetition_form" {{ old('is_repetition') == 'on' ? '' : 'hidden' }}>
+            <div class="form_elements" id="repetition_form" hidden>
                 <div class="form_element_name">
                     <div class="form_element_content">
                         繰り返し設定<br>
                     </div>
                 </div>
-                <div class="form_element_input_no_error">
+                <div class="form_element_input_base">
+                    <div class="form_element_error">
+                        @if ($errors->has('repetition_setting'))
+                            <!--<span class="invalid-feedback" role="alert">-->
+                            <span style="color: red;" role="alert">
+                                {{ $errors->first('repetition_setting') }}
+                            </span>
+                        @endif
+                    </div>
                     <div class="form_element_value" style="display: flex;">
                         <div class="form_element_checkbox">
                             <input type="checkbox" name="repetition_sun" id="repetition_sun" {{ old('repetition_sun') == 'on' || old('repetition_everyday') == 'on' ? 'checked' : '' }} {{ old('repetition_everyday') == 'on' ? 'disabled' : '' }}> 日
@@ -221,46 +284,16 @@
                     </div>
                 </div>
             </div>
-            <div class="form_elements">
-                <div class="form_element_name">
-                    <div class="form_element_content">
-                        テンプレートとして作成<br>
-                    </div>
-                </div>
-                <div class="form_element_input_no_error">
-                    <div class="form_element_value">
-                        <input type="checkbox" name="is_template" class="form_element_checkbox" onchange="changStateTemplate(this)" {{ old('is_template') == 'on' ? 'checked' : '' }}>
-                    </div>
-                </div>
-            </div>
-            <div class="form_elements" id="template_form" {{ old('is_template') == 'on' ? '' : 'hidden' }}>
-                <div class="form_element_name">
-                    <div class="form_element_content">
-                        テンプレート名<br>
-                    </div>
-                </div>
-                <div class="form_element_input_base">
-                    <div class="form_element_error">
-                        @if ($errors->has('template_name'))
-                            <!--<span class="invalid-feedback" role="alert">-->
-                            <span style="color: red;" role="alert">
-                                {{ $errors->first('template_name') }}
-                            </span>
-                        @endif
-                    </div>
-                    <div class="form_element_input">
-                        <div class="form_element_value">
-                            <input type="text" name="template_name" class="form_element_text" value="{{ old('template_name') }}">
-                        </div>
-                    </div>
-                </div>
-            </div>
             <button type="submit">登録</button>
         </form>
     </div>
 </div>
 
 <script>
+    window.onload = function() {
+        changeStatus("{{ old('status') }}");
+    };
+
     function changStateRepetition(value){
         document.getElementById("repetition_form").hidden = !value.checked;
     }
@@ -289,6 +322,37 @@
         }
         if(document.getElementById("required_minute").value == "") {
             document.getElementById("required_minute").value = 0;
+        }
+    }
+
+    function changeStatus(status) {
+        if(status == '') return;
+        if(document.getElementById('status').value == 'normal') {
+            document.getElementById('normal_deadline_form').hidden = true;
+        }
+        else if(document.getElementById('status').value == 'repetition') {
+            document.getElementById('repetition_form').hidden = true;
+            document.getElementById('repetition_deadline_form').hidden = true;
+        }
+        else if(document.getElementById('status').value == 'template') {
+            document.getElementById('template_form').hidden = true;
+            document.getElementById('repetition_deadline_form').hidden = true;
+        }
+        document.getElementById(document.getElementById('status').value + '_form_style').checked = false;
+        document.getElementById(document.getElementById('status').value + '_form_style').disabled = false;
+        document.getElementById('status').value = status;
+        document.getElementById(status + '_form_style').checked = true;
+        document.getElementById(status + '_form_style').disabled = true;
+        if(document.getElementById('status').value == 'normal') {
+            document.getElementById('normal_deadline_form').hidden = false;
+        }
+        else if(document.getElementById('status').value == 'repetition') {
+            document.getElementById('repetition_form').hidden = false;
+            document.getElementById('repetition_deadline_form').hidden = false;
+        }
+        else if(document.getElementById('status').value == 'template') {
+            document.getElementById('template_form').hidden = false;
+            document.getElementById('repetition_deadline_form').hidden = false;
         }
     }
 </script>
