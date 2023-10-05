@@ -45,11 +45,17 @@ Route::get('/home/schedule/edit', [App\Http\Controllers\ScheduleController::clas
 
 Route::post('/home/schedule/delete', [App\Http\Controllers\ScheduleController::class, 'delete'])->name('schedule.delete');
 
-Route::get('/home/todo/new', function () {
-    return view('todoRegistrationForm');
-});
+Route::get('/home/todo/new', [App\Http\Controllers\ToDoController::class, 'new']);
+
+Route::get('/home/todo/list', [App\Http\Controllers\ToDoController::class, 'list'])->name('todo.list');
 
 Route::post('/home/todo/add', [App\Http\Controllers\ToDoController::class, 'add'])->name('todo.add');
+
+Route::get('/home/todo/detail', [App\Http\Controllers\ToDoController::class, 'detail'])->name('todo.detail');
+
+Route::get('/home/todo/edit', [App\Http\Controllers\ToDoController::class, 'edit'])->name('todo.edit');
+
+Route::post('/home/todo/delete', [App\Http\Controllers\ToDoController::class, 'delete'])->name('todo.delete');
 
 Route::get('/home/workflow/new', function () {
     return view('workflowRegistrationForm');

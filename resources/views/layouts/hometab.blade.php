@@ -35,7 +35,7 @@
                 新規作成
             </div>
         </div>
-        <div class="menu_child schedule_content">
+        <div class="menu_child schedule_content" onclick="linkToToDoList()">
             <div class="menu_child_content">
                 編集・管理
             </div>
@@ -133,6 +133,10 @@ function linkToScheduleList() {
 
 function linkToToDoRegistraion() {
     location.href = "<?php echo(url('/home/todo/new')); ?>";
+}
+
+function linkToToDoList() {
+    location.href = "<?php echo(url('/home/todo/list')) ?>";
 }
 
 function linkToWorkFlowRegistration() {

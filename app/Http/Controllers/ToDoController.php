@@ -11,6 +11,131 @@ class ToDoController extends Controller
         $this->middleware('auth');
     }
 
+    function getScheduleData($list_status, $list_display_style, $list_begin, $list_end, $list_repetition) {
+        $schedule_data = array();
+        $data = '';
+        if($list_status == "normal") {
+            $data = ToDo::select(['id', 'name', 'deadline', 'type'])->where('user_id', \Auth::user()->id)->where('status', $list_status);
+            if($list_display_style == 'from_now') {
+                $now = date('Y-m-d H:i:s');
+                $data = $data->where('deadline', '>=', $now);
+            }
+            else if($list_display_style != 'all') {
+                $begin = new \DateTimeImmutable($list_begin." 0:00:00");
+                $end = new \DateTimeImmutable($list_end." 0:00:00");
+                $end = $end->modify("+1 day");
+                $data = $data->where('deadline', '>=', $begin)->where('deadline', '<', $end);
+            }
+            $data = $data->orderBy('deadline')->get();
+
+            foreach($data as $value) {
+                array_push($schedule_data, [
+                    'id' => $value->id,
+                    'name' => $value->name,
+                    'deadline' => $value->deadline,
+                    'type' => $value->type,
+                ]);
+            }
+        }
+        else if($list_status == "repetition") {
+            $data = ToDo::select(['id', 'name', 'repetition_state'])->where('user_id', \Auth::user()->id)->where('status', $list_status);
+            $isFirst = true;
+            for($i = 0; $i < strlen($list_repetition); $i++) {
+                if(substr($list_repetition, $i, 1) == '1') {
+                    $pattern = str_repeat('_', $i).'1'.str_repeat('_', strlen($list_repetition) - $i -1);
+                    if($isFirst) {
+                        $data->where('repetition_state', 'like', $pattern);
+                        $isFirst = false;
+                    }
+                    else {
+                        $data->orWhere('repetition_state', 'like', $pattern);
+                    }
+                }
+            }
+            $data = $data->orderBy('repetition_state')->get();
+
+            foreach($data as $value) {
+                array_push($schedule_data, [
+                    'id' => $value->id,
+                    'name' => $value->name,
+                    'repetition' => $value->repetition_state,
+                ]);
+            }
+        }
+        else if($list_status == "template") {
+            $data = ToDo::select(['id', 'template_name', 'repetition_state'])->where('user_id', \Auth::user()->id)->where('status', $list_status);
+            $data = $data->orderBy('created_at')->get();
+
+            foreach($data as $value) {
+                array_push($schedule_data, [
+                    'id' => $value->id,
+                    'name' => $value->template_name,
+                ]);
+            }
+        }
+        return $schedule_data;
+    }
+
+    public function new(Request $request) {
+        return view('todoRegistrationForm');
+    }
+
+    public function list(Request $request) {
+        
+        if(!$request->has('list_status')) {
+            $request->merge(['list_status' => 'normal', 'list_display_style' =>'from_now' ]);
+        }
+        if(!$request->has('deleted')) {
+            $request->merge(['deleted' => '']);
+        }
+
+        if(!$request->has('list_begin')) {
+            $request->merge(['list_begin' => date('Y-m-d')]);
+        }
+        else {
+            $request->list_begin = new \DateTimeImmutable($request->list_begin);
+            $request->list_begin = $request->list_begin->format('Y-m-d');
+        }
+        if(!$request->has('list_end')) {
+            $request->merge(['list_end' => date('Y-m-d')]);
+        }
+        else {
+            $request->list_end = new \DateTimeImmutable($request->list_end);
+            $request->list_end = $request->list_end->format('Y-m-d');
+        }
+        if(!$request->has('list_repetition')) {
+            $request->merge(['list_repetition' => '0000000']);
+        }
+
+        if($request->list_display_style == 'this_week') {
+            $request->list_begin = new \DateTimeImmutable($request->list_begin);
+            $request->list_end = new \DateTimeImmutable($request->list_end);
+            $request->list_begin = $request->list_begin->modify("-".strval(date('w'))." day");
+            $request->list_end = $request->list_end->modify("+".strval(6 - date('w'))." day");
+            $request->list_begin = $request->list_begin->format('Y-m-d');
+            $request->list_end = $request->list_end->format('Y-m-d');
+        }
+        else if($request->list_display_style == 'this_month') {
+            $request->list_begin = new \DateTimeImmutable($request->list_begin);
+            $request->list_end = new \DateTimeImmutable($request->list_end);
+            $request->list_begin = $request->list_begin->modify("-".strval(date('d') - 1)." day");
+            $request->list_end = $request->list_begin->modify("+1 month")->modify("-1 day");
+            $request->list_begin = $request->list_begin->format('Y-m-d');
+            $request->list_end = $request->list_end->format('Y-m-d');
+        }
+
+        $schedule_data = self::getScheduleData($request->list_status, $request->list_display_style, $request->list_begin, $request->list_end, $request->list_repetition);
+
+        return view('todoListView', ['list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'schedule_data' => $schedule_data, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'list_repetition' => $request->list_repetition, 'deleted' => $request->deleted]);
+    }
+
+    public function delete(Request $request) {
+        ToDo::where('user_id', \Auth::user()->id)->where('id', $request->id)->delete();
+        $request->merge([ 'deleted' => true ]);
+        $schedule_data = self::getScheduleData($request->list_status, $request->list_display_style, $request->list_begin, $request->list_end, $request->list_repetition);
+        return redirect(route('todo.list', ['list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'list_repetition' => $request->list_repetition, 'deleted' => $request->deleted]));
+    }
+
     public function add(Request $request) {
         if($request->deadline_date != NULL && $request->deadline_time != NULL) {
             $request->merge([ 'deadline' => $request->deadline_date.' '.$request->deadline_time.':00' ]);
