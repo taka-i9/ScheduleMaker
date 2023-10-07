@@ -294,20 +294,12 @@
         changeStatus("{{ old('status') }}");
     };
 
-    function changStateRepetition(value){
-        document.getElementById("repetition_form").hidden = !value.checked;
-    }
-
     function changeStateReptationEveryday(value){
         var days=["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
         days.forEach(function(day) {
             document.getElementById("repetition_"+day).disabled = value.checked;
             document.getElementById("repetition_"+day).checked = value.checked;
         });
-    }
-
-    function changStateTemplate(value){
-        document.getElementById("template_form").hidden = !value.checked;
     }
 
     function changeRequiredMinuteLimit() {

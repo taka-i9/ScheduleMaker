@@ -129,6 +129,29 @@ class ToDoController extends Controller
         return view('todoListView', ['list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'schedule_data' => $schedule_data, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'list_repetition' => $request->list_repetition, 'deleted' => $request->deleted]);
     }
 
+    public function detail(Request $request) {
+        if(!$request->has('updated')) {
+            $request->merge(['updated' => '']);
+        }
+
+        $data = ToDo::select(['id', 'status', 'type', 'name', 'deadline', 'required_minutes', 'repetition_state', 'memo', 'priority_level', 'color', 'template_name'])->where('user_id', \Auth::user()->id)->where('id', $request->id)->first();
+        $data = [
+            'id' => $data->id,
+            'status' => $data->status,
+            'type' => $data->type,
+            'name' => $data->name,
+            'deadline' => $data->deadline,
+            'required_minutes' => $data->required_minutes,
+            'repetition_state' => $data->repetition_state,
+            'memo' => $data->memo,
+            'priority_level' => $data->priority_level,
+            'color' => $data->color,
+            'template_name' => $data->template_name,
+        ];
+        
+        return view('todoDetail', ['list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'list_repetition' => $request->list_repetition, 'data' => $data, 'updated' => $request->updated]);
+    }
+
     public function delete(Request $request) {
         ToDo::where('user_id', \Auth::user()->id)->where('id', $request->id)->delete();
         $request->merge([ 'deleted' => true ]);
@@ -261,9 +284,53 @@ class ToDoController extends Controller
                     'template_name' => $request->template_name,
                 ]);
             }
+
+            return view('todoRegistrationComplete');
         }
+        //更新の場合
+        else {
+            $content = ToDo::where('user_id', \Auth::user()->id)->where('id', $request->id)->first();
+            
+            if($request->status == 'normal') {
+                $content->type = $request->type;
+                $content->name = $request->name;
+                $content->deadline = $deadline;
+                $content->required_minutes = $required_minutes;
+                $content->rest_minutes = $required_minutes;
+                $content->memo = $request->memo;
+                $content->priority_level = (int)$request->priority_level;
+                $content->color = $request->color;
+                $content->save();
+            }
+            
+            else if($request->status == 'repetition') {
+                $content->type = $request->type;
+                $content->name = $request->name;
+                $content->deadline = $repetition_deadline;
+                $content->required_minutes = $required_minutes;
+                $content->rest_minutes = $required_minutes;
+                $content->repetition_state = $repetition_state;
+                $content->memo = $request->memo;
+                $content->priority_level = (int)$request->priority_level;
+                $content->color = $request->color;
+                $content->save();
+            }
 
-        return view('todoRegistrationComplete');
+            else if($request->status == 'template') {
+                $content->type = $request->type;
+                $content->name = $request->name;
+                $content->deadline = $repetition_deadline;
+                $content->required_minutes = $required_minutes;
+                $content->rest_minutes = $required_minutes;
+                $content->memo = $request->memo;
+                $content->priority_level = (int)$request->priority_level;
+                $content->color = $request->color;
+                $content->template_name = $request->template_name;
+                $content->save();
+            }
 
+            $request->merge(['updated' => true]);
+            return redirect(route('todo.detail', ['id' => $request->id, 'list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'list_repetition' => $request->list_repetition, 'updated' => $request->updated]));
+        }
     }
 }
