@@ -76,6 +76,23 @@ class WorkFlowController extends Controller
         return view('workflowListView', ['list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'workflow_data' => $workflow_data, 'deleted' => $request->deleted]);
     }
 
+    public function detail(Request $request) {
+        if(!$request->has('updated')) {
+            $request->merge(['updated' => '']);
+        }
+
+        $data = WorkFlow::select(['id', 'name', 'deadline', 'memo', 'color'])->where('user_id', \Auth::user()->id)->where('id', $request->id)->first();
+        $data = [
+            'id' => $data->id,
+            'name' => $data->name,
+            'deadline' => $data->deadline,
+            'memo' => $data->memo,
+            'color' => $data->color,
+        ];
+        
+        return view('workflowDetail', ['list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'data' => $data, 'updated' => $request->updated]);
+    }
+
     public function delete(Request $request) {
         WorkFlow::where('user_id', \Auth::user()->id)->where('id', $request->id)->delete();
         $request->merge([ 'deleted' => true ]);
@@ -98,15 +115,31 @@ class WorkFlowController extends Controller
             'memo' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $result = WorkFlow::create([
-            'user_id' => \Auth::user()->id,
-            'name' => $request->input('name'),
-            'deadline' => $deadline,
-            'memo' => $request->input('memo'),
-            'color' => $request->input('color'),
-        ]);
+        //新規登録する場合
+        if(!$request->has('id')) {
+            $result = WorkFlow::create([
+                'user_id' => \Auth::user()->id,
+                'name' => $request->input('name'),
+                'deadline' => $deadline,
+                'memo' => $request->input('memo'),
+                'color' => $request->input('color'),
+            ]);
 
-        return view('workflowRegistrationComplete', ['id' => $result->id]);
+            return view('workflowRegistrationComplete', ['id' => $result->id]);
+        }
+        //更新の場合
+        else {
+            $content = WorkFlow::where('user_id', \Auth::user()->id)->where('id', $request->id)->first();
+            
+            $content->name = $request->name;
+            $content->deadline = $deadline;
+            $content->memo = $request->memo;
+            $content->color = $request->color;
+            $content->save();
+
+            $request->merge(['updated' => true]);
+            return redirect(route('workflow.detail', ['id' => $request->id, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'updated' => $request->updated]));
+        }
 
     }
 
