@@ -13,6 +13,75 @@ class WorkFlowController extends Controller
         $this->middleware('auth');
     }
 
+    function getWorkflowData($list_display_style, $list_begin, $list_end) {
+        $workflow_data = array();
+        $data = WorkFlow::select(['id', 'name', 'deadline'])->where('user_id', \Auth::user()->id);
+        $data = $data->orderBy('deadline')->get();
+
+        foreach($data as $value) {
+            array_push($workflow_data, [
+                'id' => $value->id,
+                'name' => $value->name,
+                'deadline' => $value->deadline,
+            ]);
+        }
+        return $workflow_data;
+    }
+
+    public function new(Request $request) {
+        return view('workflowRegistrationForm');
+    }
+
+    public function list(Request $request) {
+        if(!$request->has('list_display_style')) {
+            $request->merge([ 'list_display_style' =>'from_now' ]);
+        }
+        if(!$request->has('deleted')) {
+            $request->merge(['deleted' => '']);
+        }
+
+        if(!$request->has('list_begin')) {
+            $request->merge(['list_begin' => date('Y-m-d')]);
+        }
+        else {
+            $request->list_begin = new \DateTimeImmutable($request->list_begin);
+            $request->list_begin = $request->list_begin->format('Y-m-d');
+        }
+        if(!$request->has('list_end')) {
+            $request->merge(['list_end' => date('Y-m-d')]);
+        }
+        else {
+            $request->list_end = new \DateTimeImmutable($request->list_end);
+            $request->list_end = $request->list_end->format('Y-m-d');
+        }
+
+        if($request->list_display_style == 'this_week') {
+            $request->list_begin = new \DateTimeImmutable($request->list_begin);
+            $request->list_end = new \DateTimeImmutable($request->list_end);
+            $request->list_begin = $request->list_begin->modify("-".strval(date('w'))." day");
+            $request->list_end = $request->list_end->modify("+".strval(6 - date('w'))." day");
+            $request->list_begin = $request->list_begin->format('Y-m-d');
+            $request->list_end = $request->list_end->format('Y-m-d');
+        }
+        else if($request->list_display_style == 'this_month') {
+            $request->list_begin = new \DateTimeImmutable($request->list_begin);
+            $request->list_end = new \DateTimeImmutable($request->list_end);
+            $request->list_begin = $request->list_begin->modify("-".strval(date('d') - 1)." day");
+            $request->list_end = $request->list_begin->modify("+1 month")->modify("-1 day");
+            $request->list_begin = $request->list_begin->format('Y-m-d');
+            $request->list_end = $request->list_end->format('Y-m-d');
+        }
+
+        $workflow_data = self::getWorkflowData($request->list_display_style, $request->list_begin, $request->list_end);
+        return view('workflowListView', ['list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'workflow_data' => $workflow_data, 'deleted' => $request->deleted]);
+    }
+
+    public function delete(Request $request) {
+        WorkFlow::where('user_id', \Auth::user()->id)->where('id', $request->id)->delete();
+        $request->merge([ 'deleted' => true ]);
+        return redirect(route('workflow.list', ['list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'deleted' => $request->deleted]));
+    }
+
     public function add(Request $request) {
         if($request->input('deadline_date')!=NULL && $request->input('deadline_time')!=NULL) {
             $request->merge([ 'deadline' => $request->input('deadline_date').' '.$request->input('deadline_time').':00' ]);
@@ -37,12 +106,45 @@ class WorkFlowController extends Controller
             'color' => $request->input('color'),
         ]);
 
-        return view('workflowRegistrationComplete', ['workflow_id' => $result->id]);
+        return view('workflowRegistrationComplete', ['id' => $result->id]);
 
     }
 
     public function edit_form(Request $request) {
-        return view('workflowEditForm', ['workflow_id' => $request->input('workflow_id'), 'contents_num' => '0', 'contents_data' => array(), 'connection' => array(), 'updated' => false]);
+        $data = WorkFlow::select(['contents_num'])->where('user_id', \Auth::user()->id)->where('id', (int)$request->id)->first();
+        $contents_num = $data->contents_num;
+        $contents_data = array();
+        for($i = 1; $i <= $contents_num; $i++) {
+            if(WorkFlowContent::where('user_id', \Auth::user()->id)->where('workflow_id', $request->id)->where('contents_id', $i)->exists()) {
+                $data = WorkFlowContent::select(['name', 'required_minutes', 'margin_left', 'margin_top'])->where('user_id', \Auth::user()->id)->where('workflow_id', $request->id)->where('contents_id', $i)->first();
+
+                array_push($contents_data, [
+                    "id" => strval($i),
+                    "name" => $data->name,
+                    "hour" => ceil((int)$data->required_minutes / 60),
+                    "minute" => $data->required_minutes % 60,
+                    "margin_left" => $data->margin_left,
+                    "margin_top" => $data->margin_top
+                ]);
+            }
+        }
+
+        $connection = array();
+        $data = WorkFlowLink::where('user_id',\Auth::user()->id)->where('workflow_id', $request->id)->get();
+        foreach($data as $value) {
+            $start_id = WorkFlowContent::select(['contents_id'])->where('user_id',\Auth::user()->id)->where('id', $value->start_id)->first();
+            $start_id = $start_id->contents_id;
+            $end_id = WorkFlowContent::select(['contents_id'])->where('user_id',\Auth::user()->id)->where('id', $value->end_id)->first();
+            $end_id = $end_id->contents_id;
+            if(!array_key_exists(strval($start_id), $connection)) {
+                $connection[strval($start_id)] = array();
+            }
+            $connection[strval($start_id)][strval($end_id)] = true;
+        }
+
+        return view('workflowEditForm', ['workflow_id' => $request->id, 'contents_num' => $contents_num, 'contents_data' => $contents_data, 'connection' => $connection, 'updated' => false]);
+        //return view('workflowEditForm', ['workflow_id' => $request->input('id'), 'contents_num' => '0', 'contents_data' => array(), 'connection' => array(), 'updated' => false]);
+
     }
 
     public function update(Request $request) {
@@ -69,13 +171,14 @@ class WorkFlowController extends Controller
                 $content_time = (int)$request->input("field_content_".strval($i)."_time_hour_form") * 60 + (int)$request->input("field_content_".strval($i)."_time_minute_form");
                 $content_margin_left = $request->input("field_content_".strval($i)."_margin_left_form");
                 $content_margin_top = $request->input("field_content_".strval($i)."_margin_top_form");
-                $contents_data[strval($i)] = array(
+                array_push($contents_data, [
+                    "id" => strval($i),
                     "name" => $content_name,
                     "hour" => $request->input("field_content_".strval($i)."_time_hour_form"),
                     "minute" => $request->input("field_content_".strval($i)."_time_minute_form"),
                     "margin_left" => $content_margin_left,
                     "margin_top" => $content_margin_top
-                );
+                ]);
 
                 //更新する場合
                 if($count >= 1) {

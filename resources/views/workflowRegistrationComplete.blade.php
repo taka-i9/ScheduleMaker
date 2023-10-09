@@ -6,11 +6,11 @@
 登録完了
 <br>
 
-@if (!empty($workflow_id))
+@if (!empty($id))
 <form method="post" name="to_edit" action="{{ route('workflow.edit_form') }}">
     @csrf
     
-    <input type="hidden" name="workflow_id" value="{{ $workflow_id }}">
+    <input type="hidden" name="id" value="{{ $id }}">
     <a href="javascript:to_edit.submit()">編集画面へ</a>
 </form>
 @endif

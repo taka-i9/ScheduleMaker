@@ -57,12 +57,16 @@ Route::get('/home/todo/edit', [App\Http\Controllers\ToDoController::class, 'edit
 
 Route::post('/home/todo/delete', [App\Http\Controllers\ToDoController::class, 'delete'])->name('todo.delete');
 
-Route::get('/home/workflow/new', function () {
-    return view('workflowRegistrationForm');
-});
+Route::get('/home/workflow/new', [App\Http\Controllers\WorkFlowController::class, 'new']);
+
+Route::get('/home/workflow/list', [App\Http\Controllers\WorkFlowController::class, 'list'])->name('workflow.list');
 
 Route::post('/home/workflow/add', [App\Http\Controllers\WorkFlowController::class, 'add'])->name('workflow.add');
+
+Route::get('/home/workflow/detail', [App\Http\Controllers\WorkFlowController::class, 'detail'])->name('workflow.detail');
 
 Route::post('/home/workflow/edit', [App\Http\Controllers\WorkFlowController::class, 'edit_form'])->name('workflow.edit_form');
 
 Route::post('/home/workflow/update', [App\Http\Controllers\WorkFlowController::class, 'update'])->name('workflow.update');
+
+Route::post('/home/workflow/delete', [App\Http\Controllers\WorkFlowController::class, 'delete'])->name('workflow.delete');

@@ -50,7 +50,7 @@
                 新規作成
             </div>
         </div>
-        <div class="menu_child workflow_content">
+        <div class="menu_child workflow_content" onclick="linkToWorkFlowList()">
             <div class="menu_child_content">
                 編集・管理
             </div>
@@ -141,6 +141,10 @@ function linkToToDoList() {
 
 function linkToWorkFlowRegistration() {
     location.href = "<?php echo(url('/home/workflow/new')); ?>";
+}
+
+function linkToWorkFlowList() {
+    location.href = "<?php echo(url('/home/workflow/list')); ?>";
 }
 </script>
 

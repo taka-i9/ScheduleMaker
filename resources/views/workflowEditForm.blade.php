@@ -460,18 +460,27 @@
         //矢印の始点と終点について、明示的に示す必要がある
     }
 
-    if({{ $contents_num }} != "0") {
-        let contents_ids = [<?php 
-            foreach($contents_data as $id => $content) {
+    if("{{ $contents_num }}" != "0") {
+        /*let contents_ids = [<?php 
+            /*foreach($contents_data as $id => $content) {
                 print '"'.$id.'",'; 
                 foreach($content as $key => $value) {
                     print '"'.$value.'",';
                 }
+            } */
+        ?>];*/
+        let contents_ids = [<?php 
+            for($i = 0; $i < count($contents_data); $i++) {
+                print '{';
+                foreach($contents_data[$i] as $key => $value) {
+                    print '"'.$key.'": "'.$value.'",';
+                }
+                print '},';
             } 
         ?>];
-        for(let i = 0; i < contents_ids.length / 6; i++) {
-            createContent(contents_ids[6 * i], contents_ids[6 * i + 1], contents_ids[6 * i + 2], contents_ids[6 * i + 3], contents_ids[6 * i + 4], contents_ids[6 * i + 5]);
-            addForm(contents_ids[6 * i]);
+        for(let i = 0; i < contents_ids.length; i++) {
+            createContent(contents_ids[i]['id'], contents_ids[i]['name'], contents_ids[i]['hour'], contents_ids[i]['minute'], contents_ids[i]['margin_left'], contents_ids[i]['margin_top']);
+            addForm(contents_ids[i]['id']);
         }
         let connections = [<?php 
             foreach($connection as $start => $ends) {
@@ -487,7 +496,7 @@
     }
 
     window.onload = function() {
-        if({{ $updated }}) {
+        if("{{ $updated }}") {
             alert("保存しました。");
         }
     };
