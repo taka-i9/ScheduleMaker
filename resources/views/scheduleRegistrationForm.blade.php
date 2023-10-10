@@ -298,6 +298,21 @@
 <script>
     window.onload = function() {
         changeStatus("{{ old('status') }}");
+        
+        <?php
+        if(count($errors) == 0) {
+            $begin = new \DateTimeImmutable(date('Y-m-d H').":00:00");
+            $begin = $begin->modify('+1 hour');
+            $begin_date = $begin->format('Y-m-d');
+            $begin_time = $begin->format('H:i');
+            echo "document.getElementById('begin_date').value = '".$begin_date."';\n";
+            echo "document.getElementById('begin_time').value = '".$begin_time."';\n";
+            echo "document.getElementById('repetition_begin_time').value = '".$begin_time."';\n";
+        }
+        ?>
+
+        changeEndLimit();
+        changeRepetitionEndLimit();
     };
 
     function changStateRepetition(value){

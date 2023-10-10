@@ -292,6 +292,18 @@
 <script>
     window.onload = function() {
         changeStatus("{{ old('status') }}");
+
+        <?php
+        if(count($errors) == 0) {
+            $deadline = new \DateTimeImmutable(date('Y-m-d H').":00:00");
+            $deadline = $deadline->modify('+1 hour');
+            $deadline_date = $deadline->format('Y-m-d');
+            $deadline_time = $deadline->format('H:i');
+            echo "document.getElementById('deadline_date').value = '".$deadline_date."';\n";
+            echo "document.getElementById('deadline_time').value = '".$deadline_time."';\n";
+            echo "document.getElementById('repetition_deadline_time').value = '".$deadline_time."';\n";
+        }
+        ?>
     };
 
     function changeStateReptationEveryday(value){
