@@ -72,7 +72,7 @@
                     </div>
                     <div class="form_element_input">
                         <div class="form_element_value">
-                            <input type="text" name="name" class="form_element_text {{ $errors->has('name') ? 'is-invalid' : '' }}" value="{{ old('name') }}">
+                            <input type="text" name="name" id="name" class="form_element_text {{ $errors->has('name') ? 'is-invalid' : '' }}" value="{{ old('name') }}">
                         </div>
                     </div>
                 </div>
@@ -135,7 +135,7 @@
                 </div>
                 <div class="form_element_input_no_error">
                     <div class="form_element_value">
-                        <input type="checkbox" name="is_today" class="form_element_checkbox" {{ old('is_today') == 'on' ? 'checked' : '' }}>
+                        <input type="checkbox" name="is_today" id="is_today" class="form_element_checkbox" {{ old('is_today') == 'on' ? 'checked' : '' }}>
                     </div>
                 </div>
             </div>
@@ -227,7 +227,7 @@
                     </div>
                     <div class="form_element_input">
                         <div class="form_element_value">
-                            <input type="text" name="memo" class="form_element_text" value="{{ old('memo') }}">
+                            <input type="text" name="memo" id="memo" class="form_element_text" value="{{ old('memo') }}">
                         </div>
                     </div>
                 </div>
@@ -263,11 +263,11 @@
                 <div class="form_element_input_no_error">
                     <div class="form_element_value">
                         <select name="priority_level" id="priority_level" class="form_element_text">
-                            <option value="5" {{ old('priority_level') == '5' ? 'selected' : '' }}>5</option>
-                            <option value="4" {{ old('priority_level') == '4' ? 'selected' : '' }}>4</option>
-                            <option value="3" {{ old('priority_level') == '3' ? 'selected' : '' }}>3</option>
-                            <option value="2" {{ old('priority_level') == '2' ? 'selected' : '' }}>2</option>
-                            <option value="1" {{ old('priority_level') == '1' ? 'selected' : '' }}>1</option>
+                            <option value="5" id="priority_5" {{ old('priority_level') == '5' ? 'selected' : '' }}>5</option>
+                            <option value="4" id="priority_4" {{ old('priority_level') == '4' ? 'selected' : '' }}>4</option>
+                            <option value="3" id="priority_3" {{ old('priority_level') == '3' ? 'selected' : '' }}>3</option>
+                            <option value="2" id="priority_2" {{ old('priority_level') == '2' ? 'selected' : '' }}>2</option>
+                            <option value="1" id="priority_1" {{ old('priority_level') == '1' ? 'selected' : '' }}>1</option>
                         </select>
                     </div>
                 </div>
@@ -280,7 +280,7 @@
                 </div>
                 <div class="form_element_input_no_error">
                     <div class="form_element_value">
-                        <input type="color" name="color" class="form_element_color" value="{{ old('color') == '' ? '#ffffff' : old('color') }}">
+                        <input type="color" name="color" id="color" class="form_element_color" value="{{ old('color') == '' ? '#ffffff' : old('color') }}">
                     </div>
                 </div>
             </div>
@@ -289,6 +289,7 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>
     window.onload = function() {
         changeStatus("{{ old('status') }}");
@@ -304,6 +305,24 @@
             echo "document.getElementById('repetition_deadline_time').value = '".$deadline_time."';\n";
         }
         ?>
+
+        const data = {<?php if(count($errors) == 0 && isset($_GET['id'])) echo 'id:'.$_GET['id']; ?>};
+        if(Object.keys(data).length != 0) {
+            axios.get("{{ route('todo.get_template') }}", {params:data}).then(function (response) {
+                let now = new Date();
+                document.getElementById('name').value = response.data.name;
+                document.getElementById('deadline_date').value = String(now.getFullYear()) + '-' + String(now.getMonth() + 1) + '-' + String(now.getDate());
+                document.getElementById('deadline_time').value = response.data.deadline_time;
+                document.getElementById('repetition_deadline_time').value = response.data.deadline_time;
+                document.getElementById('is_today').checked = response.data.type == 'today' ? true : false;
+                document.getElementById('required_hour').value = response.data.required_hour;
+                document.getElementById('required_minute').value = response.data.required_minute;
+                document.getElementById('memo').value = response.data.memo;
+                document.getElementById('priority_' + String(response.data.priority_level)).selected = true;
+                document.getElementById('color').value = response.data.color;
+            });
+        }
+
     };
 
     function changeStateReptationEveryday(value){

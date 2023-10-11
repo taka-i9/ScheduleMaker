@@ -33,7 +33,7 @@ Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
-Route::get('/home/schedule/new', [App\Http\Controllers\ScheduleController::class, 'new']);
+Route::get('/home/schedule/new', [App\Http\Controllers\ScheduleController::class, 'new'])->name('schedule.new');
 
 Route::get('/home/schedule/list', [App\Http\Controllers\ScheduleController::class, 'list'])->name('schedule.list');
 
@@ -45,7 +45,9 @@ Route::get('/home/schedule/edit', [App\Http\Controllers\ScheduleController::clas
 
 Route::post('/home/schedule/delete', [App\Http\Controllers\ScheduleController::class, 'delete'])->name('schedule.delete');
 
-Route::get('/home/todo/new', [App\Http\Controllers\ToDoController::class, 'new']);
+Route::get('/home/schedule/get_template', [App\Http\Controllers\ScheduleController::class, 'get_template'])->name('schedule.get_template');
+
+Route::get('/home/todo/new', [App\Http\Controllers\ToDoController::class, 'new'])->name('todo.new');
 
 Route::get('/home/todo/list', [App\Http\Controllers\ToDoController::class, 'list'])->name('todo.list');
 
@@ -56,6 +58,8 @@ Route::get('/home/todo/detail', [App\Http\Controllers\ToDoController::class, 'de
 Route::get('/home/todo/edit', [App\Http\Controllers\ToDoController::class, 'edit'])->name('todo.edit');
 
 Route::post('/home/todo/delete', [App\Http\Controllers\ToDoController::class, 'delete'])->name('todo.delete');
+
+Route::get('/home/todo/get_template', [App\Http\Controllers\ToDoController::class, 'get_template'])->name('todo.get_template');
 
 Route::get('/home/workflow/new', [App\Http\Controllers\WorkFlowController::class, 'new']);
 

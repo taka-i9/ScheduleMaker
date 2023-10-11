@@ -333,4 +333,23 @@ class ToDoController extends Controller
             return redirect(route('todo.detail', ['id' => $request->id, 'list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'list_repetition' => $request->list_repetition, 'updated' => $request->updated]));
         }
     }
+
+    public function get_template(Request $request) {
+        $data = ToDo::select(['name', 'deadline', 'type', 'required_minutes', 'memo', 'priority_level', 'color'])->where('user_id', \Auth::user()->id)->where('id', $request->id)->first();
+        $deadline = substr($data->deadline, -8, 5);
+        $required_hour = ceil($data->required_minutes / 60);
+        $required_minute = $data->required_minutes % 60;
+        $data = [
+            'name' => $data->name,
+            'deadline_time' => $deadline,
+            'type' => $data->type,
+            'required_hour' => $required_hour,
+            'required_minute' => $required_minute,
+            'memo' => $data->memo,
+            'priority_level' => $data->priority_level,
+            'color' => $data->color,
+        ];
+        
+        return $data;
+    }
 }

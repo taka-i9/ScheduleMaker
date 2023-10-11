@@ -72,7 +72,7 @@
                     </div>
                     <div class="form_element_input">
                         <div class="form_element_value">
-                            <input type="text" name="name" class="form_element_text {{ $errors->has('name') ? 'is-invalid' : '' }}" value="{{ old('name') }}">
+                            <input type="text" name="name" id="name" class="form_element_text {{ $errors->has('name') ? 'is-invalid' : '' }}" value="{{ old('name') }}">
                         </div>
                     </div>
                 </div>
@@ -239,7 +239,7 @@
                     </div>
                     <div class="form_element_input">
                         <div class="form_element_value">
-                            <input type="text" name="memo" class="form_element_text" value="{{ old('memo') }}">
+                            <input type="text" name="memo" id="memo" class="form_element_text" value="{{ old('memo') }}">
                         </div>
                     </div>
                 </div>
@@ -274,7 +274,7 @@
                 </div>
                 <div class="form_element_input_no_error">
                     <div class="form_element_value">
-                        <input type="checkbox" name="is_duplication" class="form_element_checkbox" {{ old('is_duplication') == 'on' ? 'checked' : '' }}>
+                        <input type="checkbox" name="is_duplication" id="is_duplication" class="form_element_checkbox" {{ old('is_duplication') == 'on' ? 'checked' : '' }}>
                     </div>
                 </div>
             </div>
@@ -286,7 +286,7 @@
                 </div>
                 <div class="form_element_input_no_error">
                     <div class="form_element_value">
-                        <input type="color" name="color" class="form_element_color" value="{{ old('color') == '' ? '#ffffff' : old('color') }}">
+                        <input type="color" name="color" id="color" class="form_element_color" value="{{ old('color') == '' ? '#ffffff' : old('color') }}">
                     </div>
                 </div>
             </div>
@@ -295,6 +295,7 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>
     window.onload = function() {
         changeStatus("{{ old('status') }}");
@@ -310,6 +311,25 @@
             echo "document.getElementById('repetition_begin_time').value = '".$begin_time."';\n";
         }
         ?>
+
+        const data = {<?php if(count($errors) == 0 && isset($_GET['id'])) echo 'id:'.$_GET['id']; ?>};
+        if(Object.keys(data).length != 0) {
+            axios.get("{{ route('schedule.get_template') }}", {params:data}).then(function (response) {
+                let now = new Date();
+                document.getElementById('name').value = response.data.name;
+                document.getElementById('begin_date').value = String(now.getFullYear()) + '-' + String(now.getMonth() + 1) + '-' + String(now.getDate());
+                document.getElementById('begin_time').value = response.data.begin_time;
+                document.getElementById('repetition_begin_time').value = response.data.begin_time;
+                now.setDate(now.getDate() + Number(response.data.elapsed_days));
+                document.getElementById('end_date').value = String(now.getFullYear()) + '-' + String(now.getMonth() + 1) + '-' + String(now.getDate());
+                document.getElementById('end_time').value = response.data.end_time;
+                document.getElementById('repetition_end_date').value = response.data.elapsed_days
+                document.getElementById('repetition_end_time').value = response.data.end_time;
+                document.getElementById('memo').value = response.data.memo;
+                document.getElementById('is_duplication').checked = response.data.is_duplication ? true : false;
+                document.getElementById('color').value = response.data.color;
+            });
+        }
 
         changeEndLimit();
         changeRepetitionEndLimit();

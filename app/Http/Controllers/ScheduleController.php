@@ -412,4 +412,21 @@ class ScheduleController extends Controller
             return redirect(route('schedule.detail', ['id' => $request->id, 'list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'list_repetition' => $request->list_repetition, 'updated' => $request->updated]));
         }
     }
+
+    public function get_template(Request $request) {
+        $data = Schedule::select(['name', 'begin_time', 'end_time', 'elapsed_days', 'memo', 'is_duplication', 'color'])->where('user_id', \Auth::user()->id)->where('id', $request->id)->first();
+        $begin_time = substr($data->begin_time, -8, 5);
+        $end_time = substr($data->end_time, -8, 5);
+        $data = [
+            'name' => $data->name,
+            'begin_time' => $begin_time,
+            'end_time' => $end_time,
+            'elapsed_days' => $data->elapsed_days,
+            'memo' => $data->memo,
+            'is_duplication' => $data->is_duplication,
+            'color' => $data->color,
+        ];
+        
+        return $data;
+    }
 }

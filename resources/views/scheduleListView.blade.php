@@ -71,6 +71,8 @@
         </form>
     </div>
     <div class="view_form_content" id="view_form_content">
+        <form method="get" id="form_use" action="{{ route('schedule.new') }}">
+        </form>
         <form method="get" id="form_detail" action="{{ route('schedule.detail') }}">
             <input type="hidden" name="list_status" id="list_status_detail">
             <input type="hidden" name="list_display_style" id="list_display_style_detail">
@@ -403,11 +405,28 @@
         let content = document.createElement('div');
         content.className = 'view_content';
         let name_parent = document.createElement('div');
-        name_parent.className = 'view_schedule_contents_template_parent';
+        name_parent.className = 'view_schedule_contents_repetition_parent';
         let name_child = document.createElement('div');
         name_child.className = 'view_contents_child';
         name_child.innerText = name;
         name_parent.appendChild(name_child);
+        let use_parent = document.createElement('div');
+        use_parent.className = 'view_schedule_contents_parent';
+        let use_child = document.createElement('div');
+        use_child.className = 'view_contents_child';
+        if(id == '0') {
+            use_child.innerText = '使用';
+        }
+        else {
+            let use_button = document.createElement('button');
+            use_button.type = 'button';
+            use_button.innerText = '使用';
+            use_button.addEventListener('click', (event) => {
+                useTemplate(id);
+            });
+            use_child.appendChild(use_button);
+        }
+        use_parent.appendChild(use_child);
         let detail_parent = document.createElement('div');
         detail_parent.className = 'view_detail_parent';
         let detail_child = document.createElement('div');
@@ -443,9 +462,19 @@
         }
         delete_parent.appendChild(delete_child);
         content.appendChild(name_parent);
+        content.appendChild(use_parent);
         content.appendChild(detail_parent);
         content.appendChild(delete_parent);
         document.getElementById('view_form_content').appendChild(content);
+    }
+
+    function useTemplate(id) {
+        let use_form_id = document.createElement('input');
+        use_form_id.type = 'hidden';
+        use_form_id.name = 'id';
+        use_form_id.value = id;
+        document.getElementById('form_use').appendChild(use_form_id);
+        document.getElementById('form_use').submit();
     }
 
     function showDetailSchedule(id) {
