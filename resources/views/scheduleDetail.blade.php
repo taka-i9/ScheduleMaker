@@ -5,11 +5,11 @@
 <div class="registration_form">
     <div class="registration_form_header">
         <div class="form_header_content">
-            ToDo 詳細
+            スケジュール 詳細
         </div>
     </div>
     <div class="registration_form_content">
-        <form method="POST" action="{{ route('todo.add') }}" class="registration_form_content" id="form">
+        <form method="POST" action="{{ route('schedule.add') }}" class="registration_form_content" id="form">
             @csrf
         
             <input type="hidden" name="status" id="status">
@@ -37,49 +37,51 @@
                     </div>
                 </div>
             </div>
-            <div class="form_elements" id="normal_deadline_form">
+            <div class="form_elements" id="normal_begin_form">
                 <div class="form_element_name">
                     <div class="form_element_content">
-                        期限<br>
+                        開始時刻<br>
                     </div>
                 </div>
-                <div class="form_element_input_base" id="normal_deadline_base">
+                <div class="form_element_input_base" id="normal_begin_base">
                     <div class="form_view_input">
-                        <div class="form_element_value" id="deadline"></div>
+                        <div class="form_element_value" id="begin"></div>
                     </div>
                 </div>
             </div>
-            <div class="form_elements" id="repetition_deadline_form" hidden>
+            <div class="form_elements" id="normal_end_form">
                 <div class="form_element_name">
                     <div class="form_element_content">
-                        期限<br>
+                        終了時刻<br>
                     </div>
                 </div>
-                <div class="form_element_input_base" id="repetition_deadline_base">
+                <div class="form_element_input_base" id="normal_end_base">
                     <div class="form_view_input">
-                        <div class="form_element_value" id="repetition_deadline"></div>
+                        <div class="form_element_value" id="end"></div>
                     </div>
                 </div>
             </div>
-            <div class="form_elements">
+            <div class="form_elements" id="repetition_begin_form" hidden>
                 <div class="form_element_name">
                     <div class="form_element_content">
-                        期限日当日に行う<br>
+                        開始時刻<br>
                     </div>
                 </div>
-                <div class="form_element_input_no_error" id="is_today_base">
-                    <div class="form_element_value" id="is_today"></div>
+                <div class="form_element_input_base" id="repetition_begin_base">
+                    <div class="form_view_input">
+                        <div class="form_element_value" id="repetition_begin"></div>
+                    </div>
                 </div>
             </div>
-            <div class="form_elements">
+            <div class="form_elements" id="repetition_end_form" hidden>
                 <div class="form_element_name">
                     <div class="form_element_content">
-                        所要時間<br>
+                        終了時刻<br>
                     </div>
                 </div>
-                <div class="form_element_input_base" id="required_time_base">
+                <div class="form_element_input_base" id="repetition_end_base">
                     <div class="form_view_input">
-                        <div class="form_element_value" id="required_time"></div>
+                        <div class="form_element_value" id="repetition_end"></div>
                     </div>
                 </div>
             </div>
@@ -110,11 +112,11 @@
             <div class="form_elements">
                 <div class="form_element_name">
                     <div class="form_element_content">
-                        <label for="priority_level">優先度</label><br>
+                        ToDoリストとの重複を許可<br>
                     </div>
                 </div>
-                <div class="form_element_input_no_error" id="priority_level_base">
-                    <div class="form_element_value" id="priority_level"></div>
+                <div class="form_element_input_no_error" id="is_duplication_base">
+                    <div class="form_element_value" id="is_duplication"></div>
                 </div>
             </div>
             <div class="form_elements">
@@ -141,7 +143,7 @@
             <input type="hidden" name="list_repetition" id="list_repetition">
             <input type="hidden" name="id" id="id">
         </form>
-        <form method="GET" id="back" action="{{ route('todo.list') }}">
+        <form method="GET" id="back" action="{{ route('schedule.list') }}">
             <input type="hidden" name="list_status" id="list_status_back">
             <input type="hidden" name="list_display_style" id="list_display_style_back">
             <input type="hidden" name="list_begin" id="list_begin_back">
@@ -164,27 +166,27 @@
     var status = "<?php if(array_key_exists('status', $data)) echo $data['status']; ?>";
     var template_name = "<?php if(array_key_exists('template_name', $data)) echo $data['template_name']; ?>";
     var name = "<?php if(array_key_exists('name', $data)) echo $data['name']; ?>";
-    var deadline_date = "<?php if(array_key_exists('deadline', $data)) echo substr($data['deadline'], 0, 10); ?>";
-    var deadline_time = "<?php if(array_key_exists('deadline', $data)) echo substr($data['deadline'], -8, 5); ?>";
-    var type = "<?php if(array_key_exists('type', $data)) echo $data['type']; ?>";
-    var required_hour = <?php if(array_key_exists('required_minutes', $data)) echo (string)(ceil((int)$data['required_minutes'] / 60)); ?>;
-    var required_minute = <?php if(array_key_exists('required_minutes', $data)) echo (string)((int)$data['required_minutes'] % 60); ?>;
+    var begin_date = "<?php if(array_key_exists('begin', $data)) echo substr($data['begin'], 0, 10); ?>";
+    var begin_time = "<?php if(array_key_exists('begin', $data)) echo substr($data['begin'], -8, 5); ?>";
+    var end_date = "<?php if(array_key_exists('end', $data)) echo substr($data['end'], 0, 10); ?>";
+    var end_time = "<?php if(array_key_exists('end', $data)) echo substr($data['end'], -8, 5); ?>";
+    var elapsed_days = "<?php if(array_key_exists('elapsed_days', $data)) echo $data['elapsed_days']; ?>";
     var repetition = "<?php if(array_key_exists('repetition', $data)) echo $data['repetition']; else echo '0000000'; ?>";
     var memo = "<?php if(array_key_exists('memo', $data)) echo $data['memo']; ?>";
-    var priority_level = "<?php if(array_key_exists('priority_level', $data)) echo $data['priority_level']; ?>";
+    var is_duplication = "<?php if(array_key_exists('is_duplication', $data)) echo $data['is_duplication']; ?>";
     var color = "<?php if(array_key_exists('color', $data)) echo $data['color']; ?>";
 
     window.onload = function() {
         document.getElementById('status').value = status;
         document.getElementById('template_name').innerHTML = '<div class="form_element_text">' + template_name + '</div>';
         document.getElementById('name').innerHTML = '<div class="form_element_text">' + name + '</div>';
-        document.getElementById('deadline').innerHTML = '<div class="form_element_text">' + deadline_date + ' ' + deadline_time + '</div>';
-        document.getElementById('repetition_deadline').innerHTML = '<div class="form_element_text">' + deadline_time + '</div>';
-        document.getElementById('is_today').innerHTML = '<div class="form_element_text">' + (type == 'today' ? 'はい' : 'いいえ') + '</div>';
-        document.getElementById('required_time').innerHTML = '<div class="form_element_text">' + required_hour + ' 時間 ' + required_minute + ' 分' + '</div>';
+        document.getElementById('begin').innerHTML = '<div class="form_element_text">' + begin_date + ' ' + begin_time + '</div>';
+        document.getElementById('end').innerHTML = '<div class="form_element_text">' + end_date + ' ' + end_time + '</div>';
+        document.getElementById('repetition_begin').innerHTML = '<div class="form_element_text">' + begin_time + '</div>';
+        document.getElementById('repetition_end').innerHTML = '<div class="form_element_text">' + elapsed_days + ' 日後の ' + end_time + '</div>';
         document.getElementById('repetition').innerHTML = '<div class="form_element_text">' + viewRepetitionState(repetition) + '</div>';
         document.getElementById('memo').innerHTML = '<div class="form_element_text">' + memo + '</div>';
-        document.getElementById('priority_level').innerHTML = '<div class="form_element_text">' + priority_level + '</div>';
+        document.getElementById('is_duplication').innerHTML = '<div class="form_element_text">' + (is_duplication ? 'はい' : 'いいえ') + '</div>';
         document.getElementById('color').value = color;
 
         document.getElementById('id').value = "<?php if(array_key_exists('id', $data)) echo $data['id']; else echo old('id'); ?>";
@@ -200,8 +202,9 @@
         document.getElementById('list_repetition_back').value = list_repetition;
 
         <?php
-        $deadline_time_value = old('status') == 'normal' ? old('deadline_time') : old('repetition_deadline_time');
-        if(count($errors) != 0) echo 'changeEdit("'.old('template_name').'", "'.old('name').'", "'.old('deadline_date').'", "'.$deadline_time_value.'", "'.old('type').'", "'.old('required_hour').'", "'.old('required_minute').'", "'.old('repetition').'", "'.old('memo').'", "'.old('priority_level').'", "'.old('color').'")';
+        $begin_time_value = old('status') == 'normal' ? old('begin_time') : old('repetition_begin_time');
+        $end_time_value = old('status') == 'normal' ? old('end_time') : old('repetition_end_time');
+        if(count($errors) != 0) echo 'changeEdit("'.old('template_name').'", "'.old('name').'", "'.old('begin_date').'", "'.$begin_time_value.'", "'.old('end_date').'", "'.$end_time_value.'", "'.old('elapsed_days').'", "'.old('repetition').'", "'.old('memo').'", "'.old('is_duplication').'", "'.old('color').'")';
         else echo 'if(updated) {alert("更新しました。");}';
         ?>
     };
@@ -220,31 +223,48 @@
         }
     }
 
-    function changeRequiredMinuteLimit() {
-        if(document.getElementById("required_hour").value == 0) {
-            document.getElementById("required_minute").min = 15;
-            if(document.getElementById("required_minute").value == 0) {
-                document.getElementById("required_minute").value = 15;
-            }
+    function changeStatus(status) {
+        if(status == 'repetition') {
+            document.getElementById('normal_begin_form').hidden = true;
+            document.getElementById('normal_end_form').hidden = true;
+            document.getElementById('repetition_form').hidden = false;
+            document.getElementById('repetition_begin_form').hidden = false;
+            document.getElementById('repetition_end_form').hidden = false;
         }
-        else {
-            document.getElementById("required_minute").min = 0;
-        }
-        if(document.getElementById("required_minute").value == "") {
-            document.getElementById("required_minute").value = 0;
+        else if(status == 'template') {
+            document.getElementById('normal_begin_form').hidden = true;
+            document.getElementById('normal_end_form').hidden = true;
+            document.getElementById('template_form').hidden = false;
+            document.getElementById('repetition_begin_form').hidden = false;
+            document.getElementById('repetition_end_form').hidden = false;
         }
     }
 
-    function changeStatus(status) {
-        if(status == 'repetition') {
-            document.getElementById('normal_deadline_form').hidden = true;
-            document.getElementById('repetition_form').hidden = false;
-            document.getElementById('repetition_deadline_form').hidden = false;
+    function changeEndDateLimit(){
+        document.getElementById("begin_date").max = document.getElementById("end_date").value;
+        document.getElementById("end_date").min = document.getElementById("begin_date").value;
+    }
+
+    function changeEndTimeLimit(){
+        if(document.getElementById("begin_date").value === document.getElementById("end_date").value){
+            document.getElementById("end_time").min = document.getElementById("begin_time").value;
         }
-        else if(status == 'template') {
-            document.getElementById('normal_deadline_form').hidden = true;
-            document.getElementById('template_form').hidden = false;
-            document.getElementById('repetition_deadline_form').hidden = false;
+        else{
+            document.getElementById("end_time").min = "";
+        }
+    }
+
+    function changeEndLimit() {
+        changeEndDateLimit();
+        changeEndTimeLimit();
+    }
+
+    function changeRepetitionEndLimit() {
+        if(document.getElementById('repetition_end_date').value == 0) {
+            document.getElementById("repetition_end_time").min = document.getElementById("repetition_begin_time").value;
+        }
+        else{
+            document.getElementById("repetition_end_time").min = "";
         }
     }
 
@@ -292,7 +312,7 @@
     }
 
     function toEdit() {
-        changeEdit(template_name, name, deadline_date, deadline_time, type, required_hour, required_minute, repetition, memo, priority_level, color);
+        changeEdit(template_name, name, begin_date, begin_time, end_date, end_time, elapsed_days, repetition, memo, is_duplication, color);
     }
 
     function toSave() {
@@ -305,7 +325,7 @@
         document.getElementById('back').submit();
     }
 
-    function changeEdit(template_name, name, deadline_date, deadline_time, type, required_hour, required_minute, repetition, memo, priority_level, color) {
+    function changeEdit(template_name, name, begin_date, begin_time, end_date, end_time, elapsed_days, repetition, memo, is_duplication, color) {
         let template_name_error = document.createElement('div');
         template_name_error.className = 'form_element_error';
         let template_name_error_content = document.createElement('span');
@@ -350,117 +370,133 @@
         document.getElementById('name_base').appendChild(name_error);
         document.getElementById('name_base').appendChild(name_base);
 
-        let normal_deadline_error = document.createElement('div');
-        normal_deadline_error.className = 'form_element_error';
-        let normal_deadline_error_content = document.createElement('span');
-        normal_deadline_error_content.style.color = 'red';
-        normal_deadline_error_content.role = 'alert';
-        normal_deadline_error_content.innerText = "<?php if($errors->has('deadline')) echo $errors->first('deadline'); ?>";
-        normal_deadline_error.appendChild(normal_deadline_error_content);
-        let normal_deadline_base = document.createElement('div');
-        normal_deadline_base.className = 'form_element_input';
-        let normal_deadline_value = document.createElement('div');
-        normal_deadline_value.className = 'form_element_value';
-        let normal_deadline_time = document.createElement('div');
-        normal_deadline_time.className = 'form_element_time';
-        let normal_deadline_content_date = document.createElement('input');
-        normal_deadline_content_date.type = 'date';
-        normal_deadline_content_date.name = 'deadline_date';
-        normal_deadline_content_date.value = deadline_date;
-        let normal_deadline_space = document.createElement('span');
-        normal_deadline_space.innerHTML = '&nbsp;';
-        let normal_deadline_content_time = document.createElement('input');
-        normal_deadline_content_time.type = 'time';
-        normal_deadline_content_time.name = 'deadline_time';
-        normal_deadline_content_time.value = deadline_time;
-        normal_deadline_time.appendChild(normal_deadline_content_date);
-        normal_deadline_time.appendChild(normal_deadline_space);
-        normal_deadline_time.appendChild(normal_deadline_content_time);
-        normal_deadline_value.appendChild(normal_deadline_time);
-        normal_deadline_base.appendChild(normal_deadline_value);
-        document.getElementById('normal_deadline_base').innerHTML = '';
-        document.getElementById('normal_deadline_base').appendChild(normal_deadline_error);
-        document.getElementById('normal_deadline_base').appendChild(normal_deadline_base);
+        let normal_begin_error = document.createElement('div');
+        normal_begin_error.className = 'form_element_error';
+        let normal_begin_error_content = document.createElement('span');
+        normal_begin_error_content.style.color = 'red';
+        normal_begin_error_content.role = 'alert';
+        normal_begin_error_content.innerText = "<?php if($errors->has('begin')) echo $errors->first('begin'); ?>";
+        normal_begin_error.appendChild(normal_begin_error_content);
+        let normal_begin_base = document.createElement('div');
+        normal_begin_base.className = 'form_element_input';
+        let normal_begin_value = document.createElement('div');
+        normal_begin_value.className = 'form_element_value';
+        let normal_begin_time = document.createElement('div');
+        normal_begin_time.className = 'form_element_time';
+        let normal_begin_content_date = document.createElement('input');
+        normal_begin_content_date.type = 'date';
+        normal_begin_content_date.name = 'begin_date';
+        normal_begin_content_date.value = begin_date;
+        normal_begin_content_date.onchange = 'changeEndLimit()';
+        let normal_begin_space = document.createElement('span');
+        normal_begin_space.innerHTML = '&nbsp;';
+        let normal_begin_content_time = document.createElement('input');
+        normal_begin_content_time.type = 'time';
+        normal_begin_content_time.name = 'begin_time';
+        normal_begin_content_time.value = begin_time;
+        normal_begin_content_time.onchange = 'changeEndLimit()';
+        normal_begin_time.appendChild(normal_begin_content_date);
+        normal_begin_time.appendChild(normal_begin_space);
+        normal_begin_time.appendChild(normal_begin_content_time);
+        normal_begin_value.appendChild(normal_begin_time);
+        normal_begin_base.appendChild(normal_begin_value);
+        document.getElementById('normal_begin_base').innerHTML = '';
+        document.getElementById('normal_begin_base').appendChild(normal_begin_error);
+        document.getElementById('normal_begin_base').appendChild(normal_begin_base);
 
-        let repetition_deadline_error = document.createElement('div');
-        repetition_deadline_error.className = 'form_element_error';
-        let repetition_deadline_error_content = document.createElement('span');
-        repetition_deadline_error_content.style.color = 'red';
-        repetition_deadline_error_content.role = 'alert';
-        repetition_deadline_error_content.innerText = "<?php if($errors->has('repetition_deadline')) echo $errors->first('repetition_deadline'); ?>";
-        repetition_deadline_error.appendChild(repetition_deadline_error_content);
-        let repetition_deadline_base = document.createElement('div');
-        repetition_deadline_base.className = 'form_element_input';
-        let repetition_deadline_value = document.createElement('div');
-        repetition_deadline_value.className = 'form_element_value';
-        let repetition_deadline_time = document.createElement('div');
-        repetition_deadline_time.className = 'form_element_time';
-        let repetition_deadline_content_time = document.createElement('input');
-        repetition_deadline_content_time.type = 'time';
-        repetition_deadline_content_time.name = 'repetition_deadline_time';
-        repetition_deadline_content_time.value = deadline_time;
-        repetition_deadline_time.appendChild(repetition_deadline_content_time);
-        repetition_deadline_value.appendChild(repetition_deadline_time);
-        repetition_deadline_base.appendChild(repetition_deadline_value);
-        document.getElementById('repetition_deadline_base').innerHTML = '';
-        document.getElementById('repetition_deadline_base').appendChild(repetition_deadline_error);
-        document.getElementById('repetition_deadline_base').appendChild(repetition_deadline_base);
+        let normal_end_error = document.createElement('div');
+        normal_end_error.className = 'form_element_error';
+        let normal_end_error_content = document.createElement('span');
+        normal_end_error_content.style.color = 'red';
+        normal_end_error_content.role = 'alert';
+        normal_end_error_content.innerText = "<?php if($errors->has('end')) echo $errors->first('end'); ?>";
+        normal_end_error.appendChild(normal_end_error_content);
+        let normal_end_base = document.createElement('div');
+        normal_end_base.className = 'form_element_input';
+        let normal_end_value = document.createElement('div');
+        normal_end_value.className = 'form_element_value';
+        let normal_end_time = document.createElement('div');
+        normal_end_time.className = 'form_element_time';
+        let normal_end_content_date = document.createElement('input');
+        normal_end_content_date.type = 'date';
+        normal_end_content_date.name = 'end_date';
+        normal_end_content_date.value = end_date;
+        normal_end_content_date.onchange = 'changeEndLimit()';
+        let normal_end_space = document.createElement('span');
+        normal_end_space.innerHTML = '&nbsp;';
+        let normal_end_content_time = document.createElement('input');
+        normal_end_content_time.type = 'time';
+        normal_end_content_time.name = 'end_time';
+        normal_end_content_time.value = end_time;
+        normal_end_content_time.onchange = 'changeEndLimit()';
+        normal_end_time.appendChild(normal_end_content_date);
+        normal_end_time.appendChild(normal_end_space);
+        normal_end_time.appendChild(normal_end_content_time);
+        normal_end_value.appendChild(normal_end_time);
+        normal_end_base.appendChild(normal_end_value);
+        document.getElementById('normal_end_base').innerHTML = '';
+        document.getElementById('normal_end_base').appendChild(normal_end_error);
+        document.getElementById('normal_end_base').appendChild(normal_end_base);
 
-        let is_today_value = document.createElement('div');
-        is_today_value.className = 'form_element_value';
-        let is_today_content = document.createElement('input');
-        is_today_content.type = 'checkbox';
-        is_today_content.name = 'is_today';
-        is_today_content.className = 'form_element_checkbox';
-        is_today.checked = type == 'today';
-        is_today_value.appendChild(is_today_content);
-        document.getElementById('is_today_base').innerHTML = '';
-        document.getElementById('is_today_base').appendChild(is_today_value);
+        let repetition_begin_error = document.createElement('div');
+        repetition_begin_error.className = 'form_element_error';
+        let repetition_begin_error_content = document.createElement('span');
+        repetition_begin_error_content.style.color = 'red';
+        repetition_begin_error_content.role = 'alert';
+        repetition_begin_error_content.innerText = "<?php if($errors->has('repetition_begin')) echo $errors->first('repetition_begin'); ?>";
+        repetition_begin_error.appendChild(repetition_begin_error_content);
+        let repetition_begin_base = document.createElement('div');
+        repetition_begin_base.className = 'form_element_input';
+        let repetition_begin_value = document.createElement('div');
+        repetition_begin_value.className = 'form_element_value';
+        let repetition_begin_time = document.createElement('div');
+        repetition_begin_time.className = 'form_element_time';
+        let repetition_begin_content_time = document.createElement('input');
+        repetition_begin_content_time.type = 'time';
+        repetition_begin_content_time.name = 'repetition_begin_time';
+        repetition_begin_content_time.value = begin_time;
+        repetition_begin_time.appendChild(repetition_begin_content_time);
+        repetition_begin_value.appendChild(repetition_begin_time);
+        repetition_begin_base.appendChild(repetition_begin_value);
+        document.getElementById('repetition_begin_base').innerHTML = '';
+        document.getElementById('repetition_begin_base').appendChild(repetition_begin_error);
+        document.getElementById('repetition_begin_base').appendChild(repetition_begin_base);
 
-        let required_time_error = document.createElement('div');
-        required_time_error.className = 'form_element_error';
-        let required_time_error_content = document.createElement('span');
-        required_time_error_content.style.color = 'red';
-        required_time_error_content.role = 'alert';
-        required_time_error_content.innerText = "<?php if($errors->has('required_time')) echo $errors->first('required_time'); ?>";
-        required_time_error.appendChild(required_time_error_content);
-        let required_time_base = document.createElement('div');
-        required_time_base.className = 'form_element_input';
-        let required_time_value = document.createElement('div');
-        required_time_value.className = 'form_element_value';
-        let required_time_time = document.createElement('div');
-        required_time_time.className = 'form_element_time';
-        let required_time_content_hour = document.createElement('input');
-        required_time_content_hour.type = 'number';
-        required_time_content_hour.name = 'required_hour';
-        required_time_content_hour.id = 'required_hour';
-        required_time_content_hour.value = required_hour;
-        required_time_content_hour.min = 0;
-        required_time_content_hour.style.width = '20%';
-        required_time_content_hour.onchange = 'changeRequiredMinuteLimit()';
-        let required_time_hour_sub = document.createElement('span');
-        required_time_hour_sub.innerHTML = '時間&nbsp;';
-        let required_time_content_minute = document.createElement('input');
-        required_time_content_minute.type = 'number';
-        required_time_content_minute.name = 'required_minute';
-        required_time_content_minute.id = 'required_minute';
-        required_time_content_minute.value = required_minute;
-        required_time_content_minute.min = 0;
-        required_time_content_minute.max = 45;
-        required_time_content_minute.step = 15;
-        required_time_content_minute.style.width = '20%';
-        let required_time_minute_sub = document.createElement('span');
-        required_time_minute_sub.innerHTML = '分';
-        required_time_time.appendChild(required_time_content_hour);
-        required_time_time.appendChild(required_time_hour_sub);
-        required_time_time.appendChild(required_time_content_minute);
-        required_time_time.appendChild(required_time_minute_sub);
-        required_time_value.appendChild(required_time_time);
-        required_time_base.appendChild(required_time_value);
-        document.getElementById('required_time_base').innerHTML = '';
-        document.getElementById('required_time_base').appendChild(required_time_error);
-        document.getElementById('required_time_base').appendChild(required_time_base);
-        changeRequiredMinuteLimit();
+        let repetition_end_error = document.createElement('div');
+        repetition_end_error.className = 'form_element_error';
+        let repetition_end_error_content = document.createElement('span');
+        repetition_end_error_content.style.color = 'red';
+        repetition_end_error_content.role = 'alert';
+        repetition_end_error_content.innerText = "<?php if($errors->has('repetition_end')) echo $errors->first('repetition_end'); ?>";
+        repetition_end_error.appendChild(repetition_end_error_content);
+        let repetition_end_base = document.createElement('div');
+        repetition_end_base.className = 'form_element_input';
+        let repetition_end_value = document.createElement('div');
+        repetition_end_value.className = 'form_element_value';
+        let repetition_end_time = document.createElement('div');
+        repetition_end_time.className = 'form_element_time';
+        let repetition_end_content_date = document.createElement('input');
+        repetition_end_content_date.type = 'number';
+        repetition_end_content_date.name = 'repetition_end_date';
+        repetition_end_content_date.value = elapsed_days;
+        repetition_end_content_date.style.width = '20%';
+        repetition_end_content_date.min = 0;
+        repetition_end_content_date.onchange = 'changeRepetitionEndLimit()';
+        let repetition_end_space = document.createElement('span');
+        repetition_end_space.innerHTML = '&nbsp;日後の';
+        let repetition_end_content_time = document.createElement('input');
+        repetition_end_content_time.type = 'time';
+        repetition_end_content_time.name = 'repetition_end_time';
+        repetition_end_content_time.value = end_time;
+        repetition_end_content_time.onchange = 'changeRepetitionEndLimit()';
+        repetition_end_time.appendChild(repetition_end_content_date);
+        repetition_end_time.appendChild(repetition_end_space);
+        repetition_end_time.appendChild(repetition_end_content_time);
+        repetition_end_value.appendChild(repetition_end_time);
+        repetition_end_base.appendChild(repetition_end_value);
+        document.getElementById('repetition_end_base').innerHTML = '';
+        document.getElementById('repetition_end_base').appendChild(repetition_end_error);
+        document.getElementById('repetition_end_base').appendChild(repetition_end_base);
 
         let repetition_error = document.createElement('div');
         repetition_error.className = 'form_element_error';
@@ -540,24 +576,16 @@
         document.getElementById('memo_base').appendChild(memo_error);
         document.getElementById('memo_base').appendChild(memo_base);
 
-        let priority_level_value = document.createElement('div');
-        priority_level_value.className = 'form_element_value';
-        let priority_level_list = document.createElement('select');
-        priority_level_list.name = 'priority_level';
-        priority_level_list.id = 'priority_level';
-        priority_level_list.className = 'form_element_text';
-        for(let i = 5; i >= 1; i--) {
-            let priority_level_list_content = document.createElement('option');
-            priority_level_list_content.value = String(i);
-            priority_level_list_content.innerText = String(i);
-            if(priority_level == String(i)) {
-                priority_level_list_content.checked = true;
-            }
-            priority_level_list.appendChild(priority_level_list_content);
-        }
-        priority_level_value.appendChild(priority_level_list);
-        document.getElementById('priority_level_base').innerHTML = '';
-        document.getElementById('priority_level_base').appendChild(priority_level_value);
+        let is_duplication_value = document.createElement('div');
+        is_duplication_value.className = 'form_element_value';
+        let is_duplication_content = document.createElement('input');
+        is_duplication_content.type = 'checkbox';
+        is_duplication_content.name = 'is_duplication';
+        is_duplication_content.className = 'form_element_checkbox';
+        is_duplication.checked = is_duplication ? true : false;
+        is_duplication_value.appendChild(is_duplication_content);
+        document.getElementById('is_duplication_base').innerHTML = '';
+        document.getElementById('is_duplication_base').appendChild(is_duplication_value);
 
         document.getElementById('color').value = color;
         document.getElementById('color').disabled = false;

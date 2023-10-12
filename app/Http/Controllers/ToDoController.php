@@ -142,7 +142,7 @@ class ToDoController extends Controller
             'name' => $data->name,
             'deadline' => $data->deadline,
             'required_minutes' => $data->required_minutes,
-            'repetition_state' => $data->repetition_state,
+            'repetition' => $data->repetition_state,
             'memo' => $data->memo,
             'priority_level' => $data->priority_level,
             'color' => $data->color,

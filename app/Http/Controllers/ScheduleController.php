@@ -133,95 +133,23 @@ class ScheduleController extends Controller
         if(!$request->has('updated')) {
             $request->merge(['updated' => '']);
         }
-        if($request->list_status == 'normal') {
-            $data = Schedule::select(['id', 'name', 'begin_time', 'end_time', 'memo', 'is_duplication', 'color'])->where('user_id', \Auth::user()->id)->where('id', $request->id)->first();
-            $data = [
-                'id' => $data->id,
-                'name' => $data->name,
-                'begin_time' => $data->begin_time,
-                'end_time' => $data->end_time,
-                'memo' => $data->memo,
-                'is_duplication' => $data->is_duplication,
-                'color' => $data->color,
-            ];
-            return view('scheduleDetailNormal', ['list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'list_repetition' => $request->list_repetition, 'data' => $data, 'updated' => $request->updated]);
-        }
-        else if($request->list_status == 'repetition') {
-            $data = Schedule::select(['id', 'name', 'begin_time', 'end_time', 'repetition_state', 'elapsed_days', 'memo', 'is_duplication', 'color'])->where('user_id', \Auth::user()->id)->where('id', $request->id)->first();
-            $data = [
-                'id' => $data->id,
-                'name' => $data->name,
-                'begin_time' => $data->begin_time,
-                'end_time' => $data->end_time,
-                'repetition' => $data->repetition_state,
-                'elapsed_days' => $data->elapsed_days,
-                'memo' => $data->memo,
-                'is_duplication' => $data->is_duplication,
-                'color' => $data->color,
-            ];
-            return view('scheduleDetailRepetition', ['list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'list_repetition' => $request->list_repetition, 'data' => $data, 'updated' => $request->updated]);
-        }
-        else if($request->list_status == 'template') {
-            $data = Schedule::select(['id', 'name', 'begin_time', 'end_time', 'elapsed_days', 'memo', 'is_duplication', 'color', 'template_name'])->where('user_id', \Auth::user()->id)->where('id', $request->id)->first();
-            $data = [
-                'id' => $data->id,
-                'name' => $data->name,
-                'begin_time' => $data->begin_time,
-                'end_time' => $data->end_time,
-                'elapsed_days' => $data->elapsed_days,
-                'memo' => $data->memo,
-                'is_duplication' => $data->is_duplication,
-                'color' => $data->color,
-                'template_name' => $data->template_name,
-            ];
-            return view('scheduleDetailTemplate', ['list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'list_repetition' => $request->list_repetition, 'data' => $data, 'updated' => $request->updated]);
-        }
-    }
 
-    public function edit(Request $request) {
-        if($request->list_status == 'normal') {
-            $data = Schedule::select(['id', 'name', 'begin_time', 'end_time', 'memo', 'is_duplication', 'color'])->where('user_id', \Auth::user()->id)->where('id', $request->id)->first();
-            $data = [
-                'id' => $data->id,
-                'name' => $data->name,
-                'begin_time' => $data->begin_time,
-                'end_time' => $data->end_time,
-                'memo' => $data->memo,
-                'is_duplication' => $data->is_duplication,
-                'color' => $data->color,
-            ];
-            return view('scheduleEditNormal', ['list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'list_repetition' => $request->list_repetition, 'data' => $data]);
-        }
-        else if($request->list_status == 'repetition') {
-            $data = Schedule::select(['id', 'name', 'begin_time', 'end_time', 'repetition_state', 'elapsed_days', 'memo', 'is_duplication', 'color'])->where('user_id', \Auth::user()->id)->where('id', $request->id)->first();
-            $data = [
-                'id' => $data->id,
-                'name' => $data->name,
-                'begin_time' => $data->begin_time,
-                'end_time' => $data->end_time,
-                'repetition' => $data->repetition_state,
-                'elapsed_days' => $data->elapsed_days,
-                'memo' => $data->memo,
-                'is_duplication' => $data->is_duplication,
-                'color' => $data->color,
-            ];
-            return view('scheduleEditRepetition', ['list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'list_repetition' => $request->list_repetition, 'data' => $data]);
-        }
-        else if($request->list_status == 'template') {
-            $data = Schedule::select(['id', 'name', 'begin_time', 'end_time', 'elapsed_days', 'memo', 'is_duplication', 'color', 'template_name'])->where('user_id', \Auth::user()->id)->where('id', $request->id)->first();
-            $data = [
-                'id' => $data->id,
-                'name' => $data->name,
-                'begin_time' => $data->begin_time,
-                'end_time' => $data->end_time,
-                'elapsed_days' => $data->elapsed_days,
-                'memo' => $data->memo,
-                'is_duplication' => $data->is_duplication,
-                'color' => $data->color,
-                'template_name' => $data->template_name,
-            ];
-            return view('scheduleEditTemplate', ['list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'list_repetition' => $request->list_repetition, 'data' => $data]);
-        }
+        $data = Schedule::select(['id', 'status', 'name', 'begin_time', 'end_time', 'elapsed_days', 'repetition_state', 'memo', 'is_duplication', 'color', 'template_name'])->where('user_id', \Auth::user()->id)->where('id', $request->id)->first();
+        $data = [
+            'id' => $data->id,
+            'status' => $data->status,
+            'name' => $data->name,
+            'begin' => $data->begin_time,
+            'end' => $data->end_time,
+            'elapsed_days' => $data->elapsed_days,
+            'repetition' => $data->repetition_state,
+            'memo' => $data->memo,
+            'is_duplication' => $data->is_duplication,
+            'color' => $data->color,
+            'template_name' => $data->template_name,
+        ];
+        
+        return view('scheduleDetail', ['list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'list_repetition' => $request->list_repetition, 'data' => $data, 'updated' => $request->updated]);
     }
 
     public function delete(Request $request) {
