@@ -60,6 +60,11 @@
                 表示
             </div>
         </div>
+        <div class="menu_child representation_content" onclick="linkToRepresentation()">
+            <div class="menu_child_content">
+                表示
+            </div>
+        </div>
         <div class="menu_parent" id="menu_adjustment" onclick="changeStateMenuChild('adjustment')">
             <div class="menu_parent_content">
                 調整
@@ -145,6 +150,10 @@ function linkToWorkFlowRegistration() {
 
 function linkToWorkFlowList() {
     location.href = "<?php echo(url('/home/workflow/list')); ?>";
+}
+
+function linkToRepresentation() {
+    location.href = "<?php echo(url('/home/representation?representation_style=month')); ?>";
 }
 </script>
 

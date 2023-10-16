@@ -74,3 +74,5 @@ Route::post('/home/workflow/edit', [App\Http\Controllers\WorkFlowController::cla
 Route::post('/home/workflow/update', [App\Http\Controllers\WorkFlowController::class, 'update'])->name('workflow.update');
 
 Route::post('/home/workflow/delete', [App\Http\Controllers\WorkFlowController::class, 'delete'])->name('workflow.delete');
+
+Route::get('/home/representation', [App\Http\Controllers\RepresentationController::class, 'index'])->name('representation.index');
