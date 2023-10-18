@@ -62,7 +62,12 @@
         </div>
         <div class="menu_child representation_content" onclick="linkToRepresentation()">
             <div class="menu_child_content">
-                表示
+                スケジュール
+            </div>
+        </div>
+        <div class="menu_child representation_content" onclick="">
+            <div class="menu_child_content">
+                To do
             </div>
         </div>
         <div class="menu_parent" id="menu_adjustment" onclick="changeStateMenuChild('adjustment')">

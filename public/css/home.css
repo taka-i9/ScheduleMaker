@@ -279,6 +279,11 @@
     overflow: auto;
 }
 
+.view_form_content_representation {
+    width: 100%;
+    height: 80%;
+}
+
 .view_schedule_contents_parent {
     width: 25%;
     height: 100%;
@@ -331,4 +336,19 @@
     display: flex;
     border-bottom: solid;
     border-color: black;
+}
+
+.schedule_month_common {
+    border-top: 1px solid;
+    border-bottom: 1px solid;
+}
+
+.schedule_month_cont_left {
+    margin-left: 5%;
+    border-left: solid;
+}
+
+.schedule_month_cont_right {
+    margin-right: 5%;
+    border-right: solid;
 }

@@ -51,6 +51,7 @@ class RepresentationController extends Controller
                 'begin_time' => $data_begin_time,
                 'end_date' => $data_end_date,
                 'end_time' => $data_end_time,
+                'color' => $value->color,
                 'status' => 'normal',
             ]);
         }
@@ -86,6 +87,7 @@ class RepresentationController extends Controller
                         'begin_time' => $data_begin_time,
                         'end_date' => $data_end_date,
                         'end_time' => $data_end_time,
+                        'color' => $value->color,
                         'status' => 'repetition',
                     ]);
                 }
