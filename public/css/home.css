@@ -352,3 +352,9 @@
     margin-right: 5%;
     border-right: solid;
 }
+
+.position_height_center {
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+}

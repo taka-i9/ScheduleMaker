@@ -60,32 +60,20 @@
 
     //取得したデータを扱いやすいように加工する
     var schedule_data = {};
-    if("{{ $representation_style }}" == 'month') {
-        original_schedule_data.forEach(function(data, index) {
+    original_schedule_data.forEach(function(data, index) {
             let begin_date = data['begin_date'].substr(-2, 2);
             if(!schedule_data[begin_date]) {
                 schedule_data[begin_date] = []; 
             }
             schedule_data[begin_date].push(data);
-            //開始と終了の日付を取得
-            //その範囲の全日にちに対して以下のことを行う
-            //schedule_dataに、通し番号(index)と名前と色とIDを連想配列で渡す
-            //ただし、日付に直接ではなく、配列を用意してその中に放り込む感じで
-            //設置する場所については、連続する場合は同じ位置に設置する
         });
-    }
-    else if("{{ $representation_style }}" == 'week') {
-
-    }
-    else if("{{ $representation_style }}" == 'date') {
-
-    }
 
     window.onload = function() {
         document.getElementById('representation_style').value = "{{ $representation_style }}";
         document.getElementById('view_from').value = "{{ $view_from }}";
         document.getElementById('style_' + document.getElementById('representation_style').value).disabled = true;
         if(document.getElementById('representation_style').value == 'month') DisplayMonth();
+        else if(document.getElementById('representation_style').value == 'week') DisplayWeek();
     }
     
     function changeRepresentationStyle(style) {
@@ -236,7 +224,168 @@
                 }
             });
         });
-            
+    }
+
+    function DisplayWeek() {
+        let days = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+        let days_jp = ["日", "月", "火", "水", "木", "金", "土"];
+        let week = new Date(document.getElementById('view_from').value);
+        week = week.getDay();
+        let date = new Date(document.getElementById('view_from').value);
+
+        let display_base = document.createElement('div');
+        display_base.style.height = '100%';
+        display_base.style.width = '100%';
+        display_base.style.display = 'flex';
+        let display_time = document.createElement('div');
+        display_time.style.height = '100%';
+        display_time.style.width = '10%';
+        display_time.style.borderLeft = 'solid';
+        display_time.style.borderBottom = 'solid';
+        display_time.style.position = 'relative';
+        let display_main = document.createElement('div');
+        display_main.style.height = '100%';
+        display_main.style.width = '90%';
+        display_base.appendChild(display_time);
+        display_base.appendChild(display_main);
+        document.getElementById('view_form_content').appendChild(display_base);
+
+        let display_time_display = document.createElement('div');
+        display_time_display.style.height = '92%';
+        display_time_display.style.width = '100%';
+        display_time_display.style.top = '8%';
+        display_time_display.style.position = 'absolute';
+        display_time.appendChild(display_time_display);
+        let display_time_content_base = document.createElement('div');
+        display_time_content_base.style.height = '100%';
+        display_time_content_base.style.width = '100%';
+        display_time_content_base.style.position = 'relative';
+        display_time_display.appendChild(display_time_content_base);
+
+        for(let i = 0; i < 24; i++) {
+            let display_time_content = document.createElement('div');
+            display_time_content.style.height = String(100 / 24) + '%';
+            display_time_content.style.width = '100%';
+            display_time_content.style.top = String(100 / 48 * (2 * i - 1)) + '%';
+            display_time_content.style.position = 'absolute';
+            display_time_content_base.appendChild(display_time_content);
+            let display_time_content_text_base = document.createElement('div');
+            display_time_content_text_base.style.height = '100%';
+            display_time_content_text_base.style.width = '100%';
+            display_time_content_text_base.style.position = 'relative';
+            display_time_content.appendChild(display_time_content_text_base);
+            let display_time_content_text = document.createElement('div');
+            display_time_content_text.className = 'position_height_center';
+            display_time_content_text.style.textAlign = 'center';
+            display_time_content_text.innerHTML = ('00' + String(i)).substr(-2, 2);
+            display_time_content_text_base.appendChild(display_time_content_text);
+        }
+
+
+        let display_header_date = document.createElement('div');
+        display_header_date.style.height = '4%';
+        display_header_date.style.width = '100%';
+        display_header_date.style.display = 'flex';
+        display_header_date.style.borderBottom = 'solid';
+        display_header_date.style.borderLeft = 'solid';
+        for(let i = 0; i < 7; i++) {
+            let header_data = document.createElement('div');
+            header_data.style.width = String(100 / 7) + '%';
+            header_data.style.height = '100%';
+            header_data.style.textAlign = 'center';
+            header_data.style.borderRight = 'solid';
+            header_data.style.position = 'relative';
+            let header_data_content = document.createElement('div');
+            header_data_content.className = 'position_height_center';
+            header_data_content.innerText = String(date.getMonth() + 1) + '/' + String(date.getDate());
+            header_data.appendChild(header_data_content);
+            display_header_date.appendChild(header_data);
+            date.setDate(date.getDate() + 1);
+        }
+        display_main.appendChild(display_header_date);
+        
+        let display_header_day = document.createElement('div');
+        display_header_day.style.height = '4%';
+        display_header_day.style.width = '100%';
+        display_header_day.style.display = 'flex';
+        display_header_day.style.borderBottom = 'solid';
+        display_header_day.style.borderLeft = 'solid';
+        days.forEach(function(day, index) {
+            let header_data = document.createElement('div');
+            header_data.style.width = String(100 / 7) + '%';
+            header_data.style.height = '100%';
+            header_data.style.textAlign = 'center';
+            header_data.style.borderRight = 'solid';
+            header_data.style.position = 'relative';
+            let header_data_content = document.createElement('div');
+            header_data_content.className = 'position_height_center';
+            header_data_content.innerText = days_jp[(week + index) % 7];
+            header_data.appendChild(header_data_content);
+            display_header_day.appendChild(header_data);
+        });
+        display_main.appendChild(display_header_day);
+
+        let display_content = document.createElement('div');
+        display_content.style.width = '100%';
+        display_content.style.height = '92%';
+        display_content.style.borderLeft = 'solid';
+        display_content.style.position = 'relative';
+        for(let i = 0; i < 7; i++) {
+            let line = document.createElement('div');
+            line.style.width = String(100 / 7) + '%';
+            line.style.height = '100%';
+            line.style.marginLeft = String(100 / 7 * i) + '%';
+            line.style.borderRight = 'solid';
+            line.style.position = 'absolute';
+            display_content.appendChild(line);
+        }
+        for(let i = 0; i < 48; i++) {
+            let line = document.createElement('div');
+            line.style.width = '100%';
+            line.style.height = String(100 / 48) + '%';
+            line.style.top = String((100 / 48) * i) + '%';
+            line.style.borderBottom = 'solid ' + (i % 2 == 0 ? '1px' : '2px');
+            line.style.position = 'absolute';
+            display_content.appendChild(line);
+        }
+
+        let unfinished_schedule_end_list = [];
+        let put_pos_margin = -2;
+        Object.keys(schedule_data).forEach(function(date) {
+            schedule_data[date].forEach(function(data) {
+                let begin_pos = parseInt((new Date(data['begin_date']) - new Date(document.getElementById('view_from').value)) / 1000 / 60 / 60 / 24);
+                let end_pos = parseInt((new Date(data['end_date']) - new Date(document.getElementById('view_from').value)) / 1000 / 60 / 60 / 24);
+                let begin_time_minute = Number(data['begin_time'].substr(0, 2)) * 60 + Number(data['begin_time'].substr(-2, 2));
+                let end_time_minute = Number(data['end_time'].substr(0, 2)) * 60 + Number(data['end_time'].substr(-2, 2));
+                for(let i = unfinished_schedule_end_list.length - 1; i >= 0; i--) {
+                    if(unfinished_schedule_end_list[i][0] > data['begin_date'] || (unfinished_schedule_end_list[i][0] == data['begin_date'] && unfinished_schedule_end_list[i][1] >= data['begin_time'])) {
+                        break;
+                    }
+                    else {
+                        unfinished_schedule_end_list.pop();
+                        put_pos_margin -= 2;
+                    }
+                }
+                unfinished_schedule_end_list.push([data['end_date'], data['end_time']]);
+                put_pos_margin += 2;
+                for(let i = begin_pos; i <= end_pos; i++) {
+                    let content_begin_time = (i == begin_pos ? begin_time_minute : 0);
+                    let content_end_time = (i == end_pos ? end_time_minute : 60 * 24);
+                    let schedule_view_content = document.createElement('div');
+                    schedule_view_content.style.position = 'absolute';
+                    schedule_view_content.style.width = String(12 - put_pos_margin) + '%';
+                    schedule_view_content.style.height = String(100 / 24 * ((content_end_time - content_begin_time) / 60)) + '%';
+                    schedule_view_content.style.border = 'solid 1px';
+                    schedule_view_content.style.marginLeft = String(100 / 7 * i + put_pos_margin + 1) + '%';
+                    schedule_view_content.style.top = String(100 / 24 * (content_begin_time / 60)) + '%';
+                    schedule_view_content.style.backgroundColor = data['color'];
+                    schedule_view_content.style.textAlign = 'center';
+                    if(i == begin_pos) schedule_view_content.innerText = data['name'];
+                    display_content.appendChild(schedule_view_content);
+                }
+            });
+        });
+        display_main.appendChild(display_content);
     }
 </script>
 @endsection
