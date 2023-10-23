@@ -20,10 +20,13 @@
                 <button type="button" id="style_week" onclick="changeRepresentationStyle('week')" style="width: 33%;">週</button>
                 <button type="button" id="style_date" onclick="changeRepresentationStyle('date')" style="width: 34%;">日</button>
             </div>
-            <div>
+            <div style="display: flex">
                 <button type="button" onclick="changeRepresentationBefore()" style="width: 33%;">前</button>
                 <button type="button" onclick="changeRepresentationNext()" style="width: 33%;">次</button>
                 <button type="button" onclick="changeRepresentationNow()" style="width: 34%;">現在</button>
+            </div>
+            <div>
+                <button type="button" id="back_button" onclick="document.getElementById('setting').submit()" style="width: 20%" hidden>戻る</button>
             </div>
             <input type="hidden" name="representation_style" id="representation_style">
             <input type="hidden" name="view_from" id="view_from">
@@ -61,19 +64,24 @@
     //取得したデータを扱いやすいように加工する
     var schedule_data = {};
     original_schedule_data.forEach(function(data, index) {
-            let begin_date = data['begin_date'].substr(-2, 2);
-            if(!schedule_data[begin_date]) {
-                schedule_data[begin_date] = []; 
-            }
-            schedule_data[begin_date].push(data);
-        });
+        let begin_date = data['begin_date'].substr(-2, 2);
+        if(!schedule_data[begin_date]) {
+            schedule_data[begin_date] = []; 
+        }
+        schedule_data[begin_date].push(data);
+    });
 
     window.onload = function() {
         document.getElementById('representation_style').value = "{{ $representation_style }}";
         document.getElementById('view_from').value = "{{ $view_from }}";
         document.getElementById('style_' + document.getElementById('representation_style').value).disabled = true;
-        if(document.getElementById('representation_style').value == 'month') DisplayMonth();
+        if("{{ $display_detail }}") {
+            document.getElementById('back_button').hidden = false;
+            DisplayDate("{{ $display_detail }}".substr(-2, 2));
+        }
+        else if(document.getElementById('representation_style').value == 'month') DisplayMonth();
         else if(document.getElementById('representation_style').value == 'week') DisplayWeek();
+        else if(document.getElementById('representation_style').value == 'date') DisplayDate(document.getElementById('view_from').value.substr(-2, 2));
     }
     
     function changeRepresentationStyle(style) {
@@ -155,10 +163,11 @@
                 content_data.style.height = '16%';
                 content_data.style.border = 'solid';
                 date = new Date(date);
-                if(date.getMonth() == month) {
-                    content_data.onclick = '';
+                let full_date = String(date.getFullYear()) + '-' + String(date.getMonth() + 1) + '-'  + String(date.getDate());
+                content_data.onclick = function() {
+                    displayDetailDate(full_date);
                 }
-                else {
+                if(date.getMonth() != month) {
                     content_data.style.opacity = '0.5';
                 }
                 let content_data_header = document.createElement('div');
@@ -281,7 +290,6 @@
             display_time_content_text_base.appendChild(display_time_content_text);
         }
 
-
         let display_header_date = document.createElement('div');
         display_header_date.style.height = '4%';
         display_header_date.style.width = '100%';
@@ -325,20 +333,12 @@
         });
         display_main.appendChild(display_header_day);
 
+        date = new Date(document.getElementById('view_from').value);
         let display_content = document.createElement('div');
         display_content.style.width = '100%';
         display_content.style.height = '92%';
         display_content.style.borderLeft = 'solid';
         display_content.style.position = 'relative';
-        for(let i = 0; i < 7; i++) {
-            let line = document.createElement('div');
-            line.style.width = String(100 / 7) + '%';
-            line.style.height = '100%';
-            line.style.marginLeft = String(100 / 7 * i) + '%';
-            line.style.borderRight = 'solid';
-            line.style.position = 'absolute';
-            display_content.appendChild(line);
-        }
         for(let i = 0; i < 48; i++) {
             let line = document.createElement('div');
             line.style.width = '100%';
@@ -347,6 +347,20 @@
             line.style.borderBottom = 'solid ' + (i % 2 == 0 ? '1px' : '2px');
             line.style.position = 'absolute';
             display_content.appendChild(line);
+        }
+        for(let i = 0; i < 7; i++) {
+            let line = document.createElement('div');
+            line.style.width = String(100 / 7) + '%';
+            line.style.height = '100%';
+            line.style.marginLeft = String(100 / 7 * i) + '%';
+            line.style.borderRight = 'solid';
+            line.style.position = 'absolute';
+            let full_date = String(date.getFullYear()) + '-' + String(date.getMonth() + 1) + '-'  + String(date.getDate());
+            line.onclick = function() {
+                displayDetailDate(full_date);
+            };
+            display_content.appendChild(line);
+            date.setDate(date.getDate() + 1);
         }
 
         let unfinished_schedule_end_list = [];
@@ -386,6 +400,213 @@
             });
         });
         display_main.appendChild(display_content);
+    }
+
+    function DisplayDate(display_date) {
+        let days = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+        let days_jp = ["日", "月", "火", "水", "木", "金", "土"];
+        let week = new Date(document.getElementById('view_from').value);
+        week = week.getDay();
+        let date = new Date(document.getElementById('view_from').value);
+
+        let display_base = document.createElement('div');
+        display_base.style.height = '100%';
+        display_base.style.width = '100%';
+        display_base.style.display = 'flex';
+        let display_time = document.createElement('div');
+        display_time.style.height = '100%';
+        display_time.style.width = '10%';
+        display_time.style.borderLeft = 'solid';
+        display_time.style.borderBottom = 'solid';
+        display_time.style.position = 'relative';
+        let display_main = document.createElement('div');
+        display_main.style.height = '100%';
+        display_main.style.width = '40%';
+        display_main.style.borderLeft = 'solid';
+        display_main.style.borderRight = 'solid';
+        let display_list = document.createElement('div');
+        display_list.style.height = '100%';
+        display_list.style.width = '50%';
+        display_base.appendChild(display_time);
+        display_base.appendChild(display_main);
+        display_base.appendChild(display_list);
+        document.getElementById('view_form_content').appendChild(display_base);
+
+        let display_time_display = document.createElement('div');
+        display_time_display.style.height = '92%';
+        display_time_display.style.width = '100%';
+        display_time_display.style.top = '8%';
+        display_time_display.style.position = 'absolute';
+        display_time.appendChild(display_time_display);
+        let display_time_content_base = document.createElement('div');
+        display_time_content_base.style.height = '100%';
+        display_time_content_base.style.width = '100%';
+        display_time_content_base.style.position = 'relative';
+        display_time_display.appendChild(display_time_content_base);
+
+        for(let i = 0; i < 24; i++) {
+            let display_time_content = document.createElement('div');
+            display_time_content.style.height = String(100 / 24) + '%';
+            display_time_content.style.width = '100%';
+            display_time_content.style.top = String(100 / 48 * (2 * i - 1)) + '%';
+            display_time_content.style.position = 'absolute';
+            display_time_content_base.appendChild(display_time_content);
+            let display_time_content_text_base = document.createElement('div');
+            display_time_content_text_base.style.height = '100%';
+            display_time_content_text_base.style.width = '100%';
+            display_time_content_text_base.style.position = 'relative';
+            display_time_content.appendChild(display_time_content_text_base);
+            let display_time_content_text = document.createElement('div');
+            display_time_content_text.className = 'position_height_center';
+            display_time_content_text.style.textAlign = 'center';
+            display_time_content_text.innerHTML = ('00' + String(i)).substr(-2, 2);
+            display_time_content_text_base.appendChild(display_time_content_text);
+        }
+
+        let display_header_date = document.createElement('div');
+        display_header_date.style.height = '4%';
+        display_header_date.style.width = '100%';
+        display_header_date.style.borderBottom = 'solid';
+        let header_data = document.createElement('div');
+        header_data.style.width = '100%';
+        header_data.style.height = '100%';
+        header_data.style.textAlign = 'center';
+        header_data.style.position = 'relative';
+        let header_data_content = document.createElement('div');
+        header_data_content.className = 'position_height_center';
+        header_data_content.innerText = String(date.getMonth() + 1) + '/' + String(date.getDate());
+        header_data.appendChild(header_data_content);
+        display_header_date.appendChild(header_data);
+        display_main.appendChild(display_header_date);
+        
+        let display_header_day = document.createElement('div');
+        display_header_day.style.height = '4%';
+        display_header_day.style.width = '100%';
+        display_header_day.style.borderBottom = 'solid';
+        header_data = document.createElement('div');
+        header_data.style.width = '100%';
+        header_data.style.height = '100%';
+        header_data.style.textAlign = 'center';
+        header_data.style.position = 'relative';
+        header_data_content = document.createElement('div');
+        header_data_content.className = 'position_height_center';
+        header_data_content.innerText = days_jp[week];
+        header_data.appendChild(header_data_content);
+        display_header_day.appendChild(header_data);
+        display_main.appendChild(display_header_day);
+
+        let display_content = document.createElement('div');
+        display_content.style.width = '100%';
+        display_content.style.height = '92%';
+        display_content.style.position = 'relative';
+        for(let i = 0; i < 48; i++) {
+            let line = document.createElement('div');
+            line.style.width = '100%';
+            line.style.height = String(100 / 48) + '%';
+            line.style.top = String((100 / 48) * i) + '%';
+            line.style.borderBottom = 'solid ' + (i % 2 == 0 ? '1px' : '2px');
+            line.style.position = 'absolute';
+            display_content.appendChild(line);
+        }
+
+        let unfinished_schedule_end_list = [];
+        let put_pos_margin = -10;
+        schedule_data[display_date].forEach(function(data) {
+            let begin_time_minute = Number(data['begin_time'].substr(0, 2)) * 60 + Number(data['begin_time'].substr(-2, 2));
+            let end_time_minute = Number(data['end_time'].substr(0, 2)) * 60 + Number(data['end_time'].substr(-2, 2));
+            for(let i = unfinished_schedule_end_list.length - 1; i >= 0; i--) {
+                if(unfinished_schedule_end_list[i][0] > data['begin_date'] || (unfinished_schedule_end_list[i][0] == data['begin_date'] && unfinished_schedule_end_list[i][1] >= data['begin_time'])) {
+                    break;
+                }
+                else {
+                    unfinished_schedule_end_list.pop();
+                    put_pos_margin -= 10;
+                }
+            }
+            unfinished_schedule_end_list.push([data['end_date'], data['end_time']]);
+            put_pos_margin += 10;
+            let content_begin_time = (display_date == data['begin_date'].substr(-2, 2) ? begin_time_minute : 0);
+            let content_end_time = (display_date == data['end_date'].substr(-2, 2) ? end_time_minute : 60 * 24);
+            let schedule_view_content = document.createElement('div');
+            schedule_view_content.style.position = 'absolute';
+            schedule_view_content.style.width = String(92 - put_pos_margin) + '%';
+            schedule_view_content.style.height = String(100 / 24 * ((content_end_time - content_begin_time) / 60)) + '%';
+            schedule_view_content.style.border = 'solid 1px';
+            schedule_view_content.style.marginLeft = String(put_pos_margin + 4) + '%';
+            schedule_view_content.style.top = String(100 / 24 * (content_begin_time / 60)) + '%';
+            schedule_view_content.style.backgroundColor = data['color'];
+            schedule_view_content.style.textAlign = 'center';
+            schedule_view_content.innerText = data['name'];
+            display_content.appendChild(schedule_view_content);
+        });
+        display_main.appendChild(display_content);
+
+        schedule_data[display_date].forEach(function(data) {
+            let display_list_content = document.createElement('div');
+            display_list_content.style.width = '100%';
+            display_list_content.style.height = '5%';
+            display_list_content.style.borderRight = 'solid';
+            display_list_content.style.borderBottom = 'solid';
+            display_list_content.style.display = 'flex';
+            display_list.appendChild(display_list_content);
+            let display_list_content_name_base = document.createElement('div');
+            display_list_content_name_base.style.width = '60%';
+            display_list_content_name_base.style.height = '100%';
+            display_list_content_name_base.style.borderRight = 'solid';
+            display_list_content_name_base.style.backgroundColor = data['color'];
+            let display_list_content_name = document.createElement('div');
+            display_list_content_name.className = 'position_height_center';
+            display_list_content_name.style.textAlign = 'center';
+            display_list_content_name.innerText = data['name'];
+            display_list_content.appendChild(display_list_content_name_base);
+            display_list_content_name_base.appendChild(display_list_content_name);
+            
+            let display_list_content_time = document.createElement('div');
+            display_list_content_time.style.width = '40%';
+            display_list_content_time.style.height = '100%';
+            display_list_content_time.style.display = 'flex';
+            display_list_content.appendChild(display_list_content_time);
+            let display_list_content_time_begin = document.createElement('div');
+            display_list_content_time_begin.style.width = '40%';
+            display_list_content_time_begin.style.height = '100%';
+            display_list_content_time_begin.style.position = 'relative';
+            let display_list_content_time_begin_content = document.createElement('div');
+            display_list_content_time_begin_content.className = 'position_height_center';
+            display_list_content_time_begin_content.style.textAlign = 'center';
+            if(!data['is_begin_out']) display_list_content_time_begin_content.innerText = data['begin_time'];
+            display_list_content_time_begin.appendChild(display_list_content_time_begin_content);
+            display_list_content_time.appendChild(display_list_content_time_begin);
+            let display_list_content_time_middle = document.createElement('div');
+            display_list_content_time_middle.style.width = '20%';
+            display_list_content_time_middle.style.height = '100%';
+            display_list_content_time_middle.style.position = 'relative';
+            let display_list_content_time_middle_content = document.createElement('div');
+            display_list_content_time_middle_content.className = 'position_height_center';
+            display_list_content_time_middle_content.style.textAlign = 'center';
+            display_list_content_time_middle_content.innerText = '~';
+            display_list_content_time_middle.appendChild(display_list_content_time_middle_content);
+            display_list_content_time.appendChild(display_list_content_time_middle);
+            let display_list_content_time_end = document.createElement('div');
+            display_list_content_time_end.style.width = '40%';
+            display_list_content_time_end.style.height = '100%';
+            display_list_content_time_end.style.position = 'relative';
+            let display_list_content_time_end_content = document.createElement('div');
+            display_list_content_time_end_content.className = 'position_height_center';
+            display_list_content_time_end_content.style.textAlign = 'center';
+            if(!data['is_end_out']) display_list_content_time_end_content.innerText = data['end_time'];
+            display_list_content_time_end.appendChild(display_list_content_time_end_content);
+            display_list_content_time.appendChild(display_list_content_time_end);
+        });
+    }
+
+    function displayDetailDate(date) {
+        //alert(date);
+        let display_detail = document.createElement('input');
+        display_detail.type = 'hidden';
+        display_detail.name = 'display_detail';
+        display_detail.value = date;
+        document.getElementById('setting').appendChild(display_detail);
+        document.getElementById('setting').submit();
     }
 </script>
 @endsection
