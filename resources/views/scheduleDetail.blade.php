@@ -141,6 +141,9 @@
             <input type="hidden" name="list_begin" id="list_begin">
             <input type="hidden" name="list_end" id="list_end">
             <input type="hidden" name="list_repetition" id="list_repetition">
+            <input type="hidden" name="representation_style" id="representation_style">
+            <input type="hidden" name="view_from" id="view_from">
+            <input type="hidden" name="display_detail" id="display_detail">
             <input type="hidden" name="id" id="id">
         </form>
         <form method="GET" id="back" action="{{ route('schedule.list') }}">
@@ -149,6 +152,9 @@
             <input type="hidden" name="list_begin" id="list_begin_back">
             <input type="hidden" name="list_end" id="list_end_back">
             <input type="hidden" name="list_repetition" id="list_repetition_back">
+            <input type="hidden" name="representation_style" id="representation_style_back">
+            <input type="hidden" name="view_from" id="view_from_back">
+            <input type="hidden" name="display_detail" id="display_detail_back">
         </form>
     </div>
 </div>
@@ -159,6 +165,9 @@
     var list_begin = "<?php if(isset($list_begin)) echo $list_begin; ?>";
     var list_end = "<?php if(isset($list_end)) echo $list_end; ?>";
     var list_repetition = "<?php if(isset($list_repetition)) echo $list_repetition; ?>";
+    var representation_style = "<?php if(isset($representation_style)) echo $representation_style; ?>";
+    var view_from = "<?php if(isset($view_from)) echo $view_from; ?>";
+    var display_detail = "<?php if(isset($display_detail)) echo $display_detail; ?>";
     var updated = "<?php if(isset($updated)) echo $updated; ?>";
 
     changeStatus("{{ $data['status'] }}");
@@ -200,6 +209,13 @@
         document.getElementById('list_begin_back').value = list_begin;
         document.getElementById('list_end_back').value = list_end;
         document.getElementById('list_repetition_back').value = list_repetition;
+
+        document.getElementById('representation_style').value = representation_style;
+        document.getElementById('view_from').value = view_from;
+        document.getElementById('display_detail').value = display_detail;
+        document.getElementById('representation_style_back').value = representation_style;
+        document.getElementById('view_from_back').value = view_from;
+        document.getElementById('display_detail_back').value = display_detail;
 
         <?php
         $begin_time_value = old('status') == 'normal' ? old('begin_time') : old('repetition_begin_time');
@@ -295,19 +311,41 @@
         let list_begin_element = document.getElementById('list_begin' + type);
         let list_end_element = document.getElementById('list_end' + type);
         let list_repetition_element = document.getElementById('list_repetition' + type);
-        if(list_status_element.value == 'normal') {
-            if(list_display_style_element.value != 'custom') {
+        let representation_style_element = document.getElementById('representation_style' + type);
+        let view_from_element = document.getElementById('view_from' + type);
+        let display_detail_element = document.getElementById('display_detail' + type);
+        if("{{ $is_from_list }}") {
+            representation_style_element.remove();
+            view_from_element.remove();
+            display_detail_element.remove();
+            if(list_status_element.value == 'normal') {
+                if(list_display_style_element.value != 'custom') {
+                    list_begin_element.remove();
+                    list_end_element.remove();
+                }
+            }
+            else {
+                list_display_style_element.remove();
                 list_begin_element.remove();
                 list_end_element.remove();
             }
+            if(list_status_element.value != 'repetition') {
+                list_repetition_element.remove();
+            }
         }
         else {
+            list_status_element.remove();
             list_display_style_element.remove();
             list_begin_element.remove();
             list_end_element.remove();
-        }
-        if(list_status_element.value != 'repetition') {
             list_repetition_element.remove();
+            if(representation_style_element.value == 'date') {
+                display_detail_element.remove();
+            }
+            if(view_from_element.value === "") {
+                view_from_element.remove();
+            }
+            document.getElementById('back').action = "{{ route('representation.index') }}";
         }
     }
 

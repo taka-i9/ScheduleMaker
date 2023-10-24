@@ -77,11 +77,11 @@
         document.getElementById('style_' + document.getElementById('representation_style').value).disabled = true;
         if("{{ $display_detail }}") {
             document.getElementById('back_button').hidden = false;
-            DisplayDate("{{ $display_detail }}".substr(-2, 2));
+            DisplayDate("{{ $display_detail }}");
         }
         else if(document.getElementById('representation_style').value == 'month') DisplayMonth();
         else if(document.getElementById('representation_style').value == 'week') DisplayWeek();
-        else if(document.getElementById('representation_style').value == 'date') DisplayDate(document.getElementById('view_from').value.substr(-2, 2));
+        else if(document.getElementById('representation_style').value == 'date') DisplayDate(document.getElementById('view_from').value);
     }
     
     function changeRepresentationStyle(style) {
@@ -394,6 +394,7 @@
                     schedule_view_content.style.top = String(100 / 24 * (content_begin_time / 60)) + '%';
                     schedule_view_content.style.backgroundColor = data['color'];
                     schedule_view_content.style.textAlign = 'center';
+                    schedule_view_content.style.pointerEvents = 'none';
                     if(i == begin_pos) schedule_view_content.innerText = data['name'];
                     display_content.appendChild(schedule_view_content);
                 }
@@ -405,9 +406,13 @@
     function DisplayDate(display_date) {
         let days = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
         let days_jp = ["日", "月", "火", "水", "木", "金", "土"];
-        let week = new Date(document.getElementById('view_from').value);
+        let week = new Date(display_date);
         week = week.getDay();
-        let date = new Date(document.getElementById('view_from').value);
+        let date = new Date(display_date);
+        let original_date = display_date;
+        if(display_date.substr(-2, 1) == '-') display_date = display_date.substr(-1, 1);
+        else display_date = display_date.substr(-2, 2);
+        display_date = ('0' + display_date).substr(-2, 2);
 
         let display_base = document.createElement('div');
         display_base.style.height = '100%';
@@ -548,6 +553,9 @@
             display_list_content.style.borderRight = 'solid';
             display_list_content.style.borderBottom = 'solid';
             display_list_content.style.display = 'flex';
+            display_list_content.onclick = function() {
+                showDetail(original_date, data['id']);
+            };
             display_list.appendChild(display_list_content);
             let display_list_content_name_base = document.createElement('div');
             display_list_content_name_base.style.width = '60%';
@@ -600,12 +608,26 @@
     }
 
     function displayDetailDate(date) {
-        //alert(date);
         let display_detail = document.createElement('input');
         display_detail.type = 'hidden';
         display_detail.name = 'display_detail';
         display_detail.value = date;
         document.getElementById('setting').appendChild(display_detail);
+        document.getElementById('setting').submit();
+    }
+
+    function showDetail(date, id) {
+        let display_detail = document.createElement('input');
+        display_detail.type = 'hidden';
+        display_detail.name = 'display_detail';
+        display_detail.value = date;
+        document.getElementById('setting').appendChild(display_detail);
+        let id_content = document.createElement('input');
+        id_content.type = 'hidden';
+        id_content.name = 'id';
+        id_content.value = id;
+        document.getElementById('setting').appendChild(id_content);
+        document.getElementById('setting').action = "{{ route('schedule.detail') }}";
         document.getElementById('setting').submit();
     }
 </script>

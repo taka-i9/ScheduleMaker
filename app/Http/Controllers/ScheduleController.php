@@ -134,6 +134,13 @@ class ScheduleController extends Controller
             $request->merge(['updated' => '']);
         }
 
+        if(!$request->has('representation_style') || $request->representation_style == "") {
+            $is_from_list = true;
+        }
+        else {
+            $is_from_list = false;
+        }
+
         $data = Schedule::select(['id', 'status', 'name', 'begin_time', 'end_time', 'elapsed_days', 'repetition_state', 'memo', 'is_duplication', 'color', 'template_name'])->where('user_id', \Auth::user()->id)->where('id', $request->id)->first();
         $data = [
             'id' => $data->id,
@@ -149,7 +156,7 @@ class ScheduleController extends Controller
             'template_name' => $data->template_name,
         ];
         
-        return view('scheduleDetail', ['list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'list_repetition' => $request->list_repetition, 'data' => $data, 'updated' => $request->updated]);
+        return view('scheduleDetail', ['list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'list_repetition' => $request->list_repetition, 'representation_style' => $request->representation_style, 'view_from' => $request->view_from, 'display_detail' => $request->display_detail, 'data' => $data, 'updated' => $request->updated, 'is_from_list' => $is_from_list]);
     }
 
     public function delete(Request $request) {
@@ -337,7 +344,7 @@ class ScheduleController extends Controller
             }
 
             $request->merge(['updated' => true]);
-            return redirect(route('schedule.detail', ['id' => $request->id, 'list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'list_repetition' => $request->list_repetition, 'updated' => $request->updated]));
+            return redirect(route('schedule.detail', ['id' => $request->id, 'list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'list_repetition' => $request->list_repetition, 'representation_style' => $request->representation_style, 'view_from' => $request->view_from, 'display_detail' => $request->display_detail, 'updated' => $request->updated]));
         }
     }
 
