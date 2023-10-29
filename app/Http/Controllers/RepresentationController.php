@@ -4,6 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Schedule;
+use App\Models\Todo;
+use App\Models\WorkFlow;
+use App\Models\WorkFlowContent;
+use App\Models\WorkFlowLink;
 
 class RepresentationController extends Controller
 {
@@ -113,7 +117,90 @@ class RepresentationController extends Controller
         return $list;
     }
 
-    public function index(Request $request) {
+    function getToDo() {
+        $list = array();
+        $now = date('Y-m-d h:i:s');
+
+        //繰り返し要素については、日付が変わった時に実行するプログラムにおいて6日後のものを通常のものとして追加するため、ここでは処理を行わない
+        //通常のToDoの取り出し
+        $begin = date('Y-m-d 00:00:00', strtotime($now));
+        $end = date('Y-m-d 00:00:00', strtotime('+1 day', strtotime($now)));
+        $data = Todo::select(['id', 'name', 'deadline', 'rest_minutes', 'priority_level', 'color'])->where('user_id', \Auth::user()->id)->where('status', 'normal')->where('is_done', false);
+        $data = $data->where(function($query2)use($begin, $end) {
+            $query2->where('type', 'deadline')
+            ->orwhere(function($query)use($begin, $end) {
+                $query->where('type', 'today')->where('deadline', '>=', $begin)->where('deadline', '<', $end);
+            });
+        });
+        $data = $data->orderBy('deadline')->get();
+        foreach($data as $value) {
+            $data_deadline_date = substr($value->deadline, 0, 10);
+            $data_deadline_time = substr($value->deadline, -8, 5);
+            $is_over = false;
+            if($value->deadline < $now) {
+                $is_over = true;
+            }
+            array_push($list, [
+                'id' => $value->id,
+                'name' => $value->name,
+                'deadline_date' => $data_deadline_date,
+                'deadline_time' => $data_deadline_time,
+                'rest_minutes' => $value->rest_minutes,
+                'priority_level' => $value->priority_level,
+                'color' => $value->color,
+                'status' => 'normal',
+                'is_over' => $is_over,
+            ]);
+        }
+
+        return $list;
+    }
+
+    function getWorkFlow() {
+        $now = date('Y-m-d h:i:s');
+        $list = array();
+        $workflow_data = WorkFlow::select(['id', 'name', 'deadline', 'color'])->where('user_id', \Auth::user()->id)->get();
+        foreach($workflow_data as $workflow_value) {
+            $data_deadline_date = substr($workflow_value->deadline, 0, 10);
+            $data_deadline_time = substr($workflow_value->deadline, -8, 5);
+            $is_over = false;
+            if($workflow_value->deadline < $now) {
+                $is_over = true;
+            }
+            array_push($list, [
+                'id' => $workflow_value->id,
+                'name' => $workflow_value->name,
+                'deadline_date' => $data_deadline_date,
+                'deadline_time' => $data_deadline_time,
+                'color' => $workflow_value->color,
+                'is_over' => $is_over,
+                'content_list' => array(),
+            ]);
+            $workflow_content_data = WorkFlowContent::select(['id', 'name', 'rest_minutes'])
+            ->where('user_id', \Auth::user()->id)->where('workflow_id', $workflow_value->id)->where('is_done', false)->get();
+            //ある要素を行うために事前に行っている必要のある要素が完了しているかを確認
+            $have_parent = array();
+            foreach($workflow_content_data as $workflow_content_value) {
+                $data = WorkFlowLink::select('end_id')->where('user_id', \Auth::user()->id)->where('start_id', $workflow_content_value->id)->get();
+                foreach($data as $value) {
+                    $have_parent[$value->end_id] = true;
+                }
+            }
+            foreach($workflow_content_data as $workflow_content_value) {
+                if(!array_key_exists($workflow_content_value->id, $have_parent)) {
+                    array_push($list[array_key_last($list)]['content_list'], [
+                        'id' => $workflow_content_value->id,
+                        'name' => $workflow_content_value->name,
+                        'rest_minutes' => $workflow_content_value->rest_minutes,
+                    ]);
+                }
+            }
+        }
+
+        return $list;
+    }
+
+    public function schedule(Request $request) {
         $representation_data = ['schedule' => '', 'todo' => '', 'workflow' => ''];
         $now = date('Y-m-d H:i:s');
         $display_detail = '';
@@ -146,6 +233,45 @@ class RepresentationController extends Controller
             $end = $begin;
         }
         $representation_data['schedule'] = self::getSchedule($begin->format('Y-m-d'), $end->format('Y-m-d'));
-        return view('representationTop', ['representation_style' => $request->representation_style, 'representation_data' => $representation_data, 'view_from' => $view_from, 'display_detail' => $display_detail]);
+        return view('representationSchedule', ['representation_style' => $request->representation_style, 'representation_data' => $representation_data, 'view_from' => $view_from, 'display_detail' => $display_detail]);
+    }
+
+    public function todo(Request $request) {
+        $representation_data = ['schedule' => '', 'todo' => '', 'workflow' => ''];
+        $representation_data['todo'] = self::getToDo();
+        $representation_data['workflow'] = self::getWorkFlow();
+        return view('representationToDo', ['representation_data' => $representation_data]);
+    }
+
+    public function todo_update(Request $request) {
+        //todoを更新する場合
+        if($request->content_id == '-1') {
+            $data = Todo::where('user_id', \Auth::user()->id)->where('id', (int)$request->id)->first();
+            $data->rest_minutes = (int)$request->time;
+            $data->save();
+        }
+        //ワークフローの要素を更新する場合
+        else {
+            $data = WorkFlowContent::where('user_id', \Auth::user()->id)->where('id', (int)$request->content_id)->first();
+            $data->rest_minutes = (int)$request->time;
+            $data->save();
+        }
+        return;
+    }
+
+    public function todo_done(Request $request) {
+        //todoを更新する場合
+        if($request->content_id == '-1') {
+            $data = Todo::where('user_id', \Auth::user()->id)->where('id', (int)$request->id)->first();
+            $data->is_done = true;
+            $data->save();
+        }
+        //ワークフローの要素を更新する場合
+        else {
+            $data = WorkFlowContent::where('user_id', \Auth::user()->id)->where('id', (int)$request->content_id)->first();
+            $data->is_done = true;
+            $data->save();
+        }
+        return redirect(route('representation.todo'));
     }
 }

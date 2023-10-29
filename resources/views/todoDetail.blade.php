@@ -139,6 +139,7 @@
             <input type="hidden" name="list_begin" id="list_begin">
             <input type="hidden" name="list_end" id="list_end">
             <input type="hidden" name="list_repetition" id="list_repetition">
+            <input type="hidden" name="from_representation" id="from_representation">
             <input type="hidden" name="id" id="id">
         </form>
         <form method="GET" id="back" action="{{ route('todo.list') }}">
@@ -147,6 +148,7 @@
             <input type="hidden" name="list_begin" id="list_begin_back">
             <input type="hidden" name="list_end" id="list_end_back">
             <input type="hidden" name="list_repetition" id="list_repetition_back">
+            <input type="hidden" name="from_representation" id="from_representation_back">
         </form>
     </div>
 </div>
@@ -157,6 +159,7 @@
     var list_begin = "<?php if(isset($list_begin)) echo $list_begin; ?>";
     var list_end = "<?php if(isset($list_end)) echo $list_end; ?>";
     var list_repetition = "<?php if(isset($list_repetition)) echo $list_repetition; ?>";
+    var from_representation = "<?php if(isset($from_representation)) echo $from_representation; ?>";
     var updated = "<?php if(isset($updated)) echo $updated; ?>";
 
     changeStatus("{{ $data['status'] }}");
@@ -198,6 +201,9 @@
         document.getElementById('list_begin_back').value = list_begin;
         document.getElementById('list_end_back').value = list_end;
         document.getElementById('list_repetition_back').value = list_repetition;
+
+        document.getElementById('from_representation').value = from_representation;
+        document.getElementById('from_representation_back').value = from_representation;
 
         <?php
         $deadline_time_value = old('status') == 'normal' ? old('deadline_time') : old('repetition_deadline_time');
@@ -275,19 +281,32 @@
         let list_begin_element = document.getElementById('list_begin' + type);
         let list_end_element = document.getElementById('list_end' + type);
         let list_repetition_element = document.getElementById('list_repetition' + type);
-        if(list_status_element.value == 'normal') {
-            if(list_display_style_element.value != 'custom') {
+        let from_representation_element = document.getElementById('from_representation' + type);
+        if("{{ $is_from_list }}") {
+            from_representation_element.remove();
+            if(list_status_element.value == 'normal') {
+                if(list_display_style_element.value != 'custom') {
+                    list_begin_element.remove();
+                    list_end_element.remove();
+                }
+            }
+            else {
+                list_display_style_element.remove();
                 list_begin_element.remove();
                 list_end_element.remove();
             }
+            if(list_status_element.value != 'repetition') {
+                list_repetition_element.remove();
+            }
         }
         else {
+            list_status_element.remove();
             list_display_style_element.remove();
             list_begin_element.remove();
             list_end_element.remove();
-        }
-        if(list_status_element.value != 'repetition') {
             list_repetition_element.remove();
+            if(type == '_back') from_representation_element.remove();
+            document.getElementById('back').action = "{{ route('representation.todo') }}";
         }
     }
 

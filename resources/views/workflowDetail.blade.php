@@ -68,7 +68,14 @@
             <input type="hidden" name="list_display_style" id="list_display_style">
             <input type="hidden" name="list_begin" id="list_begin">
             <input type="hidden" name="list_end" id="list_end">
+            <input type="hidden" name="from_representation" id="from_representation">
             <input type="hidden" name="id" id="id">
+        </form>
+        <form method="GET" id="back" action="{{ route('workflow.list') }}">
+            <input type="hidden" name="list_display_style" id="list_display_style_back">
+            <input type="hidden" name="list_begin" id="list_begin_back">
+            <input type="hidden" name="list_end" id="list_end_back">
+            <input type="hidden" name="from_representation" id="from_representation_back">
         </form>
     </div>
 </div>
@@ -78,6 +85,7 @@
     var list_begin = "<?php if(isset($list_begin)) echo $list_begin; ?>";
     var list_end = "<?php if(isset($list_end)) echo $list_end; ?>";
     var list_repetition = "<?php if(isset($list_repetition)) echo $list_repetition; ?>";
+    var from_representation = "<?php if(isset($from_representation)) echo $from_representation; ?>";
     var updated = "<?php if(isset($updated)) echo $updated; ?>";
 
     var name = "<?php if(array_key_exists('name', $data)) echo $data['name']; ?>";
@@ -96,6 +104,12 @@
         document.getElementById('list_display_style').value = list_display_style;
         document.getElementById('list_begin').value = list_begin;
         document.getElementById('list_end').value = list_end;
+        document.getElementById('list_display_style_back').value = list_display_style;
+        document.getElementById('list_begin_back').value = list_begin;
+        document.getElementById('list_end_back').value = list_end;
+
+        document.getElementById('from_representation').value = from_representation;
+        document.getElementById('from_representation_back').value = from_representation;
 
         <?php
         if(count($errors) != 0) echo 'changeEdit("'.old('name').'", "'.old('deadline_date').'", "'.old('deadline_time').'", "'.old('memo').'", "'.old('color').'")';
@@ -107,9 +121,20 @@
         let list_display_style_element = document.getElementById('list_display_style' + type);
         let list_begin_element = document.getElementById('list_begin' + type);
         let list_end_element = document.getElementById('list_end' + type);
-        if(list_display_style_element.value != 'custom') {
+        let from_representation_element = document.getElementById('from_representation' + type);
+        if("{{ $is_from_list }}") {
+            from_representation_element.remove();
+            if(list_display_style_element.value != 'custom') {
+                list_begin_element.remove();
+                list_end_element.remove();
+            }
+        }
+        else {
+            list_display_style_element.remove();
             list_begin_element.remove();
             list_end_element.remove();
+            if(type == '_back') from_representation_element.remove();
+            document.getElementById('back').action = "{{ route('representation.todo') }}";
         }
     }
 
@@ -123,11 +148,8 @@
     }
 
     function backList() {
-        listSetting('');
-        document.getElementById('id').remove();
-        document.getElementById('form').action = "{{ route('workflow.list') }}";
-        document.getElementById('form').method = "GET";
-        document.getElementById('form').submit();
+        listSetting('_back');
+        document.getElementById('back').submit();
     }
 
     function changeEdit(name, deadline_date, deadline_time, memo, color) {

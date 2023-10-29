@@ -134,6 +134,13 @@ class ToDoController extends Controller
             $request->merge(['updated' => '']);
         }
 
+        if(!$request->has('from_representation') || !$request->from_representation) {
+            $is_from_list = true;
+        }
+        else {
+            $is_from_list = false;
+        }
+
         $data = ToDo::select(['id', 'status', 'type', 'name', 'deadline', 'required_minutes', 'repetition_state', 'memo', 'priority_level', 'color', 'template_name'])->where('user_id', \Auth::user()->id)->where('id', $request->id)->first();
         $data = [
             'id' => $data->id,
@@ -149,7 +156,7 @@ class ToDoController extends Controller
             'template_name' => $data->template_name,
         ];
         
-        return view('todoDetail', ['list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'list_repetition' => $request->list_repetition, 'data' => $data, 'updated' => $request->updated]);
+        return view('todoDetail', ['list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'list_repetition' => $request->list_repetition, 'from_representation' => $request->from_representation, 'data' => $data, 'updated' => $request->updated, 'is_from_list' => $is_from_list]);
     }
 
     public function delete(Request $request) {
@@ -330,7 +337,7 @@ class ToDoController extends Controller
             }
 
             $request->merge(['updated' => true]);
-            return redirect(route('todo.detail', ['id' => $request->id, 'list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'list_repetition' => $request->list_repetition, 'updated' => $request->updated]));
+            return redirect(route('todo.detail', ['id' => $request->id, 'list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'list_repetition' => $request->list_repetition, 'from_representation' => $request->from_representation, 'updated' => $request->updated]));
         }
     }
 

@@ -75,4 +75,10 @@ Route::post('/home/workflow/update', [App\Http\Controllers\WorkFlowController::c
 
 Route::post('/home/workflow/delete', [App\Http\Controllers\WorkFlowController::class, 'delete'])->name('workflow.delete');
 
-Route::get('/home/representation', [App\Http\Controllers\RepresentationController::class, 'index'])->name('representation.index');
+Route::get('/home/representation/schedule', [App\Http\Controllers\RepresentationController::class, 'schedule'])->name('representation.schedule');
+
+Route::get('/home/representation/todo', [App\Http\Controllers\RepresentationController::class, 'todo'])->name('representation.todo');
+
+Route::post('/home/representation/todo/update', [App\Http\Controllers\RepresentationController::class, 'todo_update'])->name('representation.todo_update');
+
+Route::post('/home/representation/todo/done', [App\Http\Controllers\RepresentationController::class, 'todo_done'])->name('representation.todo_done');

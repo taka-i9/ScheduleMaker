@@ -60,12 +60,12 @@
                 表示
             </div>
         </div>
-        <div class="menu_child representation_content" onclick="linkToRepresentation()">
+        <div class="menu_child representation_content" onclick="linkToRepresentationSchedule()">
             <div class="menu_child_content">
                 スケジュール
             </div>
         </div>
-        <div class="menu_child representation_content" onclick="">
+        <div class="menu_child representation_content" onclick="linkToRepresentationToDo()">
             <div class="menu_child_content">
                 To do
             </div>
@@ -157,8 +157,12 @@ function linkToWorkFlowList() {
     location.href = "<?php echo(url('/home/workflow/list')); ?>";
 }
 
-function linkToRepresentation() {
-    location.href = "<?php echo(url('/home/representation?representation_style=month')); ?>";
+function linkToRepresentationSchedule() {
+    location.href = "<?php echo(url('/home/representation/schedule?representation_style=month')); ?>";
+}
+
+function linkToRepresentationToDo() {
+    location.href = "<?php echo(url('/home/representation/todo')); ?>";
 }
 </script>
 

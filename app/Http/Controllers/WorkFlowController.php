@@ -81,6 +81,13 @@ class WorkFlowController extends Controller
             $request->merge(['updated' => '']);
         }
 
+        if(!$request->has('from_representation') || !$request->from_representation) {
+            $is_from_list = true;
+        }
+        else {
+            $is_from_list = false;
+        }
+
         $data = WorkFlow::select(['id', 'name', 'deadline', 'memo', 'color'])->where('user_id', \Auth::user()->id)->where('id', $request->id)->first();
         $data = [
             'id' => $data->id,
@@ -90,7 +97,7 @@ class WorkFlowController extends Controller
             'color' => $data->color,
         ];
         
-        return view('workflowDetail', ['list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'data' => $data, 'updated' => $request->updated]);
+        return view('workflowDetail', ['list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'from_representation' => $request->from_representation, 'data' => $data, 'updated' => $request->updated, 'is_from_list' => $is_from_list]);
     }
 
     public function delete(Request $request) {
@@ -138,7 +145,7 @@ class WorkFlowController extends Controller
             $content->save();
 
             $request->merge(['updated' => true]);
-            return redirect(route('workflow.detail', ['id' => $request->id, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'updated' => $request->updated]));
+            return redirect(route('workflow.detail', ['id' => $request->id, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'from_representation' => $request->from_representation, 'updated' => $request->updated]));
         }
 
     }

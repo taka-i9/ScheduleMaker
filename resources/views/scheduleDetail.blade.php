@@ -345,7 +345,7 @@
             if(view_from_element.value === "") {
                 view_from_element.remove();
             }
-            document.getElementById('back').action = "{{ route('representation.index') }}";
+            document.getElementById('back').action = "{{ route('representation.schedule') }}";
         }
     }
 

@@ -9,7 +9,7 @@
         </div>
     </div>
     <div class="view_form_edit">
-        <form method="get" id="setting" action="{{ route('representation.index') }}">
+        <form method="get" id="setting" action="{{ route('representation.schedule') }}">
             <!--<div style="display: flex;">
                 <button type="button" style="width: 33%;">スケジュール</button>
                 <button type="button" style="width: 33%;">ToDo</button>
