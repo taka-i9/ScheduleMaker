@@ -82,3 +82,5 @@ Route::get('/home/representation/todo', [App\Http\Controllers\RepresentationCont
 Route::post('/home/representation/todo/update', [App\Http\Controllers\RepresentationController::class, 'todo_update'])->name('representation.todo_update');
 
 Route::post('/home/representation/todo/done', [App\Http\Controllers\RepresentationController::class, 'todo_done'])->name('representation.todo_done');
+
+Route::get('/home/representation/today', [App\Http\Controllers\RepresentationController::class, 'today'])->name('representation.today');

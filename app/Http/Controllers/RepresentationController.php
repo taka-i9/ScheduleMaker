@@ -21,7 +21,7 @@ class RepresentationController extends Controller
         //通常のスケジュールの取り出し
         $begin = date('Y-m-d 00:00:00', strtotime($begin_date));
         $end = date('Y-m-d 00:00:00', strtotime('+1 day', strtotime($end_date)));
-        $data = Schedule::select(['id', 'name', 'begin_time', 'end_time', 'color'])->where('user_id', \Auth::user()->id)->where('status', 'normal');
+        $data = Schedule::select(['id', 'name', 'begin_time', 'end_time', 'color', 'is_duplication'])->where('user_id', \Auth::user()->id)->where('status', 'normal');
         $data = $data->where(function($query2)use($begin, $end) {
             $query2->where(function($query)use($begin, $end) {
                 //期間内から始まるスケジュール
@@ -65,12 +65,13 @@ class RepresentationController extends Controller
                 'status' => 'normal',
                 'is_begin_out' => $is_begin_out,
                 'is_end_out' => $is_end_out,
+                'is_duplication' => $value->is_duplication,
             ]);
         }
 
         //繰り返し要素の取り出し
         for($i = 0; $i < 7; $i++) {
-            $data = Schedule::select(['id', 'name', 'begin_time', 'end_time', 'elapsed_days', 'color'])->where('user_id', \Auth::user()->id)->where('status', 'repetition');
+            $data = Schedule::select(['id', 'name', 'begin_time', 'end_time', 'elapsed_days', 'color', 'is_duplication'])->where('user_id', \Auth::user()->id)->where('status', 'repetition');
             $pattern = str_repeat('_', $i).'1'.str_repeat('_', 7 - $i - 1);
             $data = $data->where('repetition_state', 'like', $pattern);
             $data = $data->get();
@@ -109,6 +110,7 @@ class RepresentationController extends Controller
                         'status' => 'repetition',
                         'is_begin_out' => $is_begin_out,
                         'is_end_out' => $is_end_out,
+                        'is_duplication' => $value->is_duplication,
                     ]);
                 }
             }
@@ -125,7 +127,7 @@ class RepresentationController extends Controller
         //通常のToDoの取り出し
         $begin = date('Y-m-d 00:00:00', strtotime($now));
         $end = date('Y-m-d 00:00:00', strtotime('+1 day', strtotime($now)));
-        $data = Todo::select(['id', 'name', 'deadline', 'rest_minutes', 'priority_level', 'color'])->where('user_id', \Auth::user()->id)->where('status', 'normal')->where('is_done', false);
+        $data = Todo::select(['id', 'name', 'type', 'deadline', 'rest_minutes', 'priority_level', 'color'])->where('user_id', \Auth::user()->id)->where('status', 'normal')->where('is_done', false);
         $data = $data->where(function($query2)use($begin, $end) {
             $query2->where('type', 'deadline')
             ->orwhere(function($query)use($begin, $end) {
@@ -149,6 +151,7 @@ class RepresentationController extends Controller
                 'priority_level' => $value->priority_level,
                 'color' => $value->color,
                 'status' => 'normal',
+                'type' => $value->type,
                 'is_over' => $is_over,
             ]);
         }
@@ -159,7 +162,7 @@ class RepresentationController extends Controller
     function getWorkFlow() {
         $now = date('Y-m-d h:i:s');
         $list = array();
-        $workflow_data = WorkFlow::select(['id', 'name', 'deadline', 'color'])->where('user_id', \Auth::user()->id)->get();
+        $workflow_data = WorkFlow::select(['id', 'name', 'deadline', 'color'])->where('user_id', \Auth::user()->id)->orderBy('deadline')->get();
         foreach($workflow_data as $workflow_value) {
             $data_deadline_date = substr($workflow_value->deadline, 0, 10);
             $data_deadline_time = substr($workflow_value->deadline, -8, 5);
@@ -273,5 +276,96 @@ class RepresentationController extends Controller
             $data->save();
         }
         return redirect(route('representation.todo'));
+    }
+
+    public function today(Request $request) {
+        $representation_data = ['schedule' => array(), 'todo' => array(), 'workflow' => array()];
+        $begin = new \DateTimeImmutable(date('Y-m-d').' 00:00:00');
+        $end = $begin;
+
+        $representation_data['schedule'] = self::getSchedule($begin->format('Y-m-d'), $end->format('Y-m-d'));
+        $begin_list = array();
+        $end_list = array();
+        //設定で変更可能にする予定
+        $minutes = (24 - (int)date('H')) * 30;
+        //todoに用いることのできる時間を計算する
+        foreach($representation_data['schedule'] as $data) {
+            if(!$data['is_duplication']) {
+                if($data['begin_date'] == date('Y-m-d', strtotime($request->date))) {
+                    $time -= (int)substr($data['begin_time'], 0, 2) * 60 + (int)substr($data['begin_time'], -2, 2);
+                }
+                else $time = 0;
+                array_push($begin_list, $time);
+                if($data['end_date'] == date('Y-m-d', strtotime($request->date))) {
+                    $time = (int)substr($data['end_time'], 0, 2) * 60 + (int)substr($data['end_time'], -2, 2);
+                }
+                else $time = 24 * 60;
+                array_push($end_list, $time);
+            }
+        }
+        sort($begin_list);
+        sort($end_list);
+        for($i = count($begin_list) - 1; $i >= 1; $i--) {
+            if($begin_list[$i] <= $end_list[$i - 1]) {
+                array_splice($begin_list, $i, 1);
+                array_splice($end_list, $i - 1, 1);
+            }
+        }
+        for($i = 0; $i < count($begin_list); $i++) {
+            $minutes -= (min($end_list[$i], (int)date('H') * 60) - min($begin_list[$i], (int)date('H') * 60));
+        }
+
+        $todo_data = self::getToDo();
+        for($todo_i = 0; $todo_i < count($todo_data); $todo_i++) {
+            if($todo_data[$todo_i]['deadline_time'] <= date('Y-m-d')) {
+                $minutes -= $todo_data[$todo_i]['rest_minutes'];
+                array_push($representation_data['todo'], $todo_data[$todo_i]);
+            }
+            else break;
+        }
+        $workflow_data = self::getWorkFlow();
+        for($workflow_i = 0; $workflow_i < count($workflow_data); $workflow_i++) {
+            if(count($workflow_data[$workflow_i]['content_list']) == 0) continue;
+            else if($workflow_data[$workflow_i]['deadline_time'] <= date('Y-m-d')) {
+                foreach($workflow_data[$workflow_i]['content_list'] as $data) {
+                    $minutes -= $data['rest_minutes'];
+                }
+                array_push($representation_data['workflow'], $workflow_data[$workflow_i]);
+            }
+            else break;
+        }
+
+        $minutes_todo = $minutes / 2;
+        $minutes_workflow = $minutes / 2;
+        for(; $todo_i < count($todo_data) && $minutes_todo > 0; $todo_i++) {
+            $minutes_todo -= $todo_data[$todo_i]['rest_minutes'];
+            array_push($representation_data['todo'], $todo_data[$todo_i]);
+        }
+        for(; $workflow_i < count($workflow_data) && $minutes_workflow > 0; $workflow_i++) {
+            if(count($workflow_data[$workflow_i]['content_list']) == 0) continue;
+            foreach($workflow_data[$workflow_i]['content_list'] as $data) {
+                $minutes_workflow -= $data['rest_minutes'];
+            }
+            array_push($representation_data['workflow'], $workflow_data[$workflow_i]);
+        }
+
+        $minutes = $minutes - $minutes_todo - $minutes_workflow;
+        if($minutes_todo > 0) {
+            for(; $workflow_i < count($workflow_data) && $minutes > 0; $workflow_i++) {
+                if(count($workflow_data[$workflow_i]['content_list']) == 0) continue;
+                foreach($workflow_data[$workflow_i]['content_list'] as $data) {
+                    $minutes -= $data['rest_minutes'];
+                }
+                array_push($representation_data['workflow'], $workflow_data[$workflow_i]);
+            }
+        }
+        if($minutes_workflow > 0) {
+            for(; $todo_i < count($todo_data) && $minutes > 0; $todo_i++) {
+                $minutes -= $todo_data[$todo_i]['rest_minutes'];
+                array_push($representation_data['todo'], $todo_data[$todo_i]);
+            }
+        }
+
+        return view('representationToday', ['representation_data' => $representation_data]);
     }
 }

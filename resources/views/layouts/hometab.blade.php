@@ -70,6 +70,11 @@
                 To do
             </div>
         </div>
+        <div class="menu_child representation_content" onclick="linkToRepresentationToday()">
+            <div class="menu_child_content">
+                今日の予定
+            </div>
+        </div>
         <div class="menu_parent" id="menu_adjustment" onclick="changeStateMenuChild('adjustment')">
             <div class="menu_parent_content">
                 調整
@@ -163,6 +168,10 @@ function linkToRepresentationSchedule() {
 
 function linkToRepresentationToDo() {
     location.href = "<?php echo(url('/home/representation/todo')); ?>";
+}
+
+function linkToRepresentationToday() {
+    location.href = "<?php echo(url('/home/representation/today')); ?>";
 }
 </script>
 
