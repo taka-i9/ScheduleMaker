@@ -144,6 +144,7 @@
             <input type="hidden" name="representation_style" id="representation_style">
             <input type="hidden" name="view_from" id="view_from">
             <input type="hidden" name="display_detail" id="display_detail">
+            <input type="hidden" name="display_today" id="display_today">
             <input type="hidden" name="id" id="id">
         </form>
         <form method="GET" id="back" action="{{ route('schedule.list') }}">
@@ -155,6 +156,7 @@
             <input type="hidden" name="representation_style" id="representation_style_back">
             <input type="hidden" name="view_from" id="view_from_back">
             <input type="hidden" name="display_detail" id="display_detail_back">
+            <input type="hidden" name="display_today" id="display_today_back">
         </form>
     </div>
 </div>
@@ -168,6 +170,7 @@
     var representation_style = "<?php if(isset($representation_style)) echo $representation_style; ?>";
     var view_from = "<?php if(isset($view_from)) echo $view_from; ?>";
     var display_detail = "<?php if(isset($display_detail)) echo $display_detail; ?>";
+    var display_today = "<?php if(isset($display_today)) echo $display_today; ?>";
     var updated = "<?php if(isset($updated)) echo $updated; ?>";
 
     changeStatus("{{ $data['status'] }}");
@@ -213,9 +216,11 @@
         document.getElementById('representation_style').value = representation_style;
         document.getElementById('view_from').value = view_from;
         document.getElementById('display_detail').value = display_detail;
+        document.getElementById('display_today').value = display_today;
         document.getElementById('representation_style_back').value = representation_style;
         document.getElementById('view_from_back').value = view_from;
         document.getElementById('display_detail_back').value = display_detail;
+        document.getElementById('display_today_back').value = display_today;
 
         <?php
         $begin_time_value = old('status') == 'normal' ? old('begin_time') : old('repetition_begin_time');
@@ -314,10 +319,12 @@
         let representation_style_element = document.getElementById('representation_style' + type);
         let view_from_element = document.getElementById('view_from' + type);
         let display_detail_element = document.getElementById('display_detail' + type);
+        let display_today_element = document.getElementById('display_today' + type);
         if("{{ $is_from_list }}") {
             representation_style_element.remove();
             view_from_element.remove();
             display_detail_element.remove();
+            display_today_element.remove();
             if(list_status_element.value == 'normal') {
                 if(list_display_style_element.value != 'custom') {
                     list_begin_element.remove();
@@ -339,13 +346,23 @@
             list_begin_element.remove();
             list_end_element.remove();
             list_repetition_element.remove();
-            if(representation_style_element.value == 'date') {
-                display_detail_element.remove();
+            if("{{ $is_from_schedule }}") {
+                display_today_element.remove();
+                if(representation_style_element.value == 'date') {
+                    display_detail_element.remove();
+                }
+                if(view_from_element.value === "") {
+                    view_from_element.remove();
+                }
+                document.getElementById('back').action = "{{ route('representation.schedule') }}";
             }
-            if(view_from_element.value === "") {
+            else {
+                representation_style_element.remove();
                 view_from_element.remove();
+                display_detail_element.remove();
+                if(type == '_back') display_today_element.remove();
+                document.getElementById('back').action = "{{ route('representation.today') }}";
             }
-            document.getElementById('back').action = "{{ route('representation.schedule') }}";
         }
     }
 

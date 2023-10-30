@@ -81,11 +81,18 @@ class WorkFlowController extends Controller
             $request->merge(['updated' => '']);
         }
 
-        if(!$request->has('from_representation') || !$request->from_representation) {
+        if((!$request->has('representation_style') || $request->representation_style == "") && (!$request->has('display_today') || $request->display_today == "")) {
             $is_from_list = true;
+            $is_from_schedule = false;
         }
         else {
             $is_from_list = false;
+            if(!$request->has('display_today') || $request->display_today == "") {
+                $is_from_schedule = true;
+            }
+            else {
+                $is_from_schedule = false;
+            }
         }
 
         $data = WorkFlow::select(['id', 'name', 'deadline', 'memo', 'color'])->where('user_id', \Auth::user()->id)->where('id', $request->id)->first();
@@ -97,7 +104,7 @@ class WorkFlowController extends Controller
             'color' => $data->color,
         ];
         
-        return view('workflowDetail', ['list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'from_representation' => $request->from_representation, 'data' => $data, 'updated' => $request->updated, 'is_from_list' => $is_from_list]);
+        return view('workflowDetail', ['list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'from_representation' => $request->from_representation, 'display_today' => $request->display_today, 'data' => $data, 'updated' => $request->updated, 'is_from_list' => $is_from_list, 'is_from_schedule' => $is_from_schedule]);
     }
 
     public function delete(Request $request) {
@@ -145,7 +152,7 @@ class WorkFlowController extends Controller
             $content->save();
 
             $request->merge(['updated' => true]);
-            return redirect(route('workflow.detail', ['id' => $request->id, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'from_representation' => $request->from_representation, 'updated' => $request->updated]));
+            return redirect(route('workflow.detail', ['id' => $request->id, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'from_representation' => $request->from_representation, 'display_today' => $request->display_today, 'updated' => $request->updated]));
         }
 
     }

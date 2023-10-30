@@ -134,11 +134,18 @@ class ScheduleController extends Controller
             $request->merge(['updated' => '']);
         }
 
-        if(!$request->has('representation_style') || $request->representation_style == "") {
+        if((!$request->has('representation_style') || $request->representation_style == "") && (!$request->has('display_today') || $request->display_today == "")) {
             $is_from_list = true;
+            $is_from_schedule = false;
         }
         else {
             $is_from_list = false;
+            if(!$request->has('display_today') || $request->display_today == "") {
+                $is_from_schedule = true;
+            }
+            else {
+                $is_from_schedule = false;
+            }
         }
 
         $data = Schedule::select(['id', 'status', 'name', 'begin_time', 'end_time', 'elapsed_days', 'repetition_state', 'memo', 'is_duplication', 'color', 'template_name'])->where('user_id', \Auth::user()->id)->where('id', $request->id)->first();
@@ -156,7 +163,7 @@ class ScheduleController extends Controller
             'template_name' => $data->template_name,
         ];
         
-        return view('scheduleDetail', ['list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'list_repetition' => $request->list_repetition, 'representation_style' => $request->representation_style, 'view_from' => $request->view_from, 'display_detail' => $request->display_detail, 'data' => $data, 'updated' => $request->updated, 'is_from_list' => $is_from_list]);
+        return view('scheduleDetail', ['list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'list_repetition' => $request->list_repetition, 'representation_style' => $request->representation_style, 'view_from' => $request->view_from, 'display_detail' => $request->display_detail, 'display_today' => $request->display_today, 'data' => $data, 'updated' => $request->updated, 'is_from_list' => $is_from_list, 'is_from_schedule' => $is_from_schedule]);
     }
 
     public function delete(Request $request) {
@@ -344,7 +351,7 @@ class ScheduleController extends Controller
             }
 
             $request->merge(['updated' => true]);
-            return redirect(route('schedule.detail', ['id' => $request->id, 'list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'list_repetition' => $request->list_repetition, 'representation_style' => $request->representation_style, 'view_from' => $request->view_from, 'display_detail' => $request->display_detail, 'updated' => $request->updated]));
+            return redirect(route('schedule.detail', ['id' => $request->id, 'list_status' => $request->list_status, 'list_display_style' => $request->list_display_style, 'list_begin' => $request->list_begin, 'list_end' => $request->list_end, 'list_repetition' => $request->list_repetition, 'representation_style' => $request->representation_style, 'view_from' => $request->view_from, 'display_detail' => $request->display_detail, 'display_today' => $request->display_today, 'updated' => $request->updated]));
         }
     }
 

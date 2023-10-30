@@ -275,12 +275,14 @@ class RepresentationController extends Controller
             $data->is_done = true;
             $data->save();
         }
-        return redirect(route('representation.todo'));
+        if(!$request->has('is_today')) return redirect(route('representation.todo'));
+        else return redirect(route('representation.today'));
     }
 
     public function today(Request $request) {
         $representation_data = ['schedule' => array(), 'todo' => array(), 'workflow' => array()];
-        $begin = new \DateTimeImmutable(date('Y-m-d').' 00:00:00');
+        $now = date('Y-m-d');
+        $begin = new \DateTimeImmutable($now.' 00:00:00');
         $end = $begin;
 
         $representation_data['schedule'] = self::getSchedule($begin->format('Y-m-d'), $end->format('Y-m-d'));
@@ -317,7 +319,7 @@ class RepresentationController extends Controller
 
         $todo_data = self::getToDo();
         for($todo_i = 0; $todo_i < count($todo_data); $todo_i++) {
-            if($todo_data[$todo_i]['deadline_time'] <= date('Y-m-d')) {
+            if($todo_data[$todo_i]['deadline_time'] <= $now) {
                 $minutes -= $todo_data[$todo_i]['rest_minutes'];
                 array_push($representation_data['todo'], $todo_data[$todo_i]);
             }
@@ -326,7 +328,7 @@ class RepresentationController extends Controller
         $workflow_data = self::getWorkFlow();
         for($workflow_i = 0; $workflow_i < count($workflow_data); $workflow_i++) {
             if(count($workflow_data[$workflow_i]['content_list']) == 0) continue;
-            else if($workflow_data[$workflow_i]['deadline_time'] <= date('Y-m-d')) {
+            else if($workflow_data[$workflow_i]['deadline_time'] <= $now) {
                 foreach($workflow_data[$workflow_i]['content_list'] as $data) {
                     $minutes -= $data['rest_minutes'];
                 }
@@ -366,6 +368,6 @@ class RepresentationController extends Controller
             }
         }
 
-        return view('representationToday', ['representation_data' => $representation_data]);
+        return view('representationToday', ['representation_data' => $representation_data, 'date' => $now]);
     }
 }
