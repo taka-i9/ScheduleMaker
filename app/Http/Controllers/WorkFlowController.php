@@ -163,7 +163,7 @@ class WorkFlowController extends Controller
         $contents_data = array();
         for($i = 1; $i <= $contents_num; $i++) {
             if(WorkFlowContent::where('user_id', \Auth::user()->id)->where('workflow_id', $request->id)->where('contents_id', $i)->exists()) {
-                $data = WorkFlowContent::select(['name', 'required_minutes', 'margin_left', 'margin_top'])->where('user_id', \Auth::user()->id)->where('workflow_id', $request->id)->where('contents_id', $i)->first();
+                $data = WorkFlowContent::select(['name', 'required_minutes', 'margin_left', 'margin_top', 'is_done'])->where('user_id', \Auth::user()->id)->where('workflow_id', $request->id)->where('contents_id', $i)->first();
 
                 array_push($contents_data, [
                     "id" => strval($i),
@@ -171,7 +171,8 @@ class WorkFlowController extends Controller
                     "hour" => ceil((int)$data->required_minutes / 60),
                     "minute" => $data->required_minutes % 60,
                     "margin_left" => $data->margin_left,
-                    "margin_top" => $data->margin_top
+                    "margin_top" => $data->margin_top,
+                    "is_done" => $data->is_done,
                 ]);
             }
         }

@@ -160,15 +160,43 @@
             block_once = false;
             return;
         }
-        document.getElementById("registration_free_field").removeEventListener("mousemove", moveContent);
-        document.getElementById("registration_free_field").removeEventListener("click", putContent);
         if(mode == "add") { 
+            document.getElementById("registration_free_field").removeEventListener("mousemove", moveContent);
+            document.getElementById("registration_free_field").removeEventListener("click", putContent);
             document.getElementById("registration_menu_" + mode).style.backgroundColor = "";
             addForm(movingContent);
             content_id++;
             mode = "";
         }
         else if(mode == "move") {
+            //重なっていないかの確認
+            let moving = document.getElementById(id_head + movingContent);
+            let target_rect = e.currentTarget.getBoundingClientRect();
+            let x = Number(e.clientX - target_rect.left);
+            let y = Number(e.clientY - target_rect.top);
+            let w = Number(moving.style.width.substr(0, moving.style.width.length - 2));
+            let h = Number(moving.style.height.substr(0, moving.style.height.length - 2));
+            let is_overlaped = false;
+            //他の座標を(u,v)として、u<x<u+u.width || u<x+width<u+u.width
+            // u<x<u+u.width || u-width<x<u+u.width-width
+            //つまり、u-width<=x<=u+u.width && v-height<=y<=v+v.height のとき、重なっている
+            for(let i = 1; i < content_id; i++) {
+                if(i == movingContent || document.getElementById(id_head + i) == null) continue;
+                let content = document.getElementById(id_head + i);
+                let u = Number(content.style.marginLeft.substr(0, content.style.marginLeft.length - 2));
+                let v = Number(content.style.marginTop.substr(0, content.style.marginTop.length - 2));
+                let content_w = Number(content.style.width.substr(0, content.style.width.length - 2));
+                let content_h = Number(content.style.height.substr(0, content.style.height.length - 2));
+                if(u - w <= x && x <= u + content_w && v - h <= y && y <= v + content_h) {
+                    is_overlaped = true;
+                }
+            }
+            if(is_overlaped) {
+                alert('重なっています。');
+                return;
+            }
+            document.getElementById("registration_free_field").removeEventListener("mousemove", moveContent);
+            document.getElementById("registration_free_field").removeEventListener("click", putContent);
             document.getElementById(id_head + movingContent + "_margin_left_form").value = document.getElementById(id_head + movingContent).style.marginLeft;
             document.getElementById(id_head + movingContent + "_margin_top_form").value = document.getElementById(id_head + movingContent).style.marginTop;
             //関連するリンクを再生する
@@ -185,6 +213,10 @@
             finishEditContent(editingContent);
         }
         if(mode == "edit") {
+            if(value.className == "registration_free_field_content_done") {
+                alert('完了済みのタスクは編集できません。');
+                return;
+            }
             editingContent = value.id;
             var title_id = value.id + "_title_input";
             var hour_id = value.id + "_time_input_hour";
@@ -223,6 +255,10 @@
                 value.style.borderColor = "black";
             }
             else {
+                if(value.className == "registration_free_field_content_done") {
+                    alert('完了済みのタスクを選択することはできません。');
+                    return;
+                }
                 let connection_search_queue = [];
                 let searched_id = {};
                 let check = false;
@@ -266,6 +302,10 @@
             }
         }
         else if(mode == "delete") {
+            if(value.className == "registration_free_field_content_done") {
+                alert('完了済みのタスクを削除することはできません。');
+                return;
+            }
             if(window.confirm("この要素を削除します。\nよろしいですか?")) {
                 removeContentComplete(value.id.substr(id_head.length));
             }
@@ -324,7 +364,7 @@
         document.getElementById("registration_menu_" + mode).style.backgroundColor = "white";
         if(mode == "add") {
             movingContent = String(content_id);
-            createContent(content_id, "タイトル" + String(content_id), "1", "0", "0px", "0px");
+            createContent(content_id, "タイトル" + String(content_id), "1", "0", "0px", "0px", false);
 
             document.getElementById("registration_free_field").addEventListener("mousemove", moveContent);
             document.getElementById("registration_free_field").addEventListener("click", putContent);
@@ -359,12 +399,16 @@
         }
     }
 
-    function createContent(id, title, time_hour, time_minute, margin_left, margin_top) {
+    function createContent(id, title, time_hour, time_minute, margin_left, margin_top, is_done) {
         let new_content = document.createElement("div");
-        new_content.className = "registration_free_field_content";
+        if(is_done) new_content.className = "registration_free_field_content_done";
+        else new_content.className = "registration_free_field_content";
         new_content.id = id_head + String(id);
         new_content.style.marginLeft = margin_left;
         new_content.style.marginTop = margin_top;
+        //現在のところ固定長としているが、幅調整可能にするかもしれない
+        new_content.style.width = '200px';
+        new_content.style.height = '75px';
         var func = "editContent(document.getElementById('"+ new_content.id +"'))";
         new_content.setAttribute("onclick", func);
         let new_content_title = document.createElement("div");
@@ -461,14 +505,6 @@
     }
 
     if("{{ $contents_num }}" != "0") {
-        /*let contents_ids = [<?php 
-            /*foreach($contents_data as $id => $content) {
-                print '"'.$id.'",'; 
-                foreach($content as $key => $value) {
-                    print '"'.$value.'",';
-                }
-            } */
-        ?>];*/
         let contents_ids = [<?php 
             for($i = 0; $i < count($contents_data); $i++) {
                 print '{';
@@ -479,7 +515,7 @@
             } 
         ?>];
         for(let i = 0; i < contents_ids.length; i++) {
-            createContent(contents_ids[i]['id'], contents_ids[i]['name'], contents_ids[i]['hour'], contents_ids[i]['minute'], contents_ids[i]['margin_left'], contents_ids[i]['margin_top']);
+            createContent(contents_ids[i]['id'], contents_ids[i]['name'], contents_ids[i]['hour'], contents_ids[i]['minute'], contents_ids[i]['margin_left'], contents_ids[i]['margin_top'], contents_ids[i]['is_done']);
             addForm(contents_ids[i]['id']);
         }
         let connections = [<?php 

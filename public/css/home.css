@@ -246,6 +246,16 @@
     text-align: center;
 }
 
+.registration_free_field_content_done {
+    border: solid; 
+    border-color: black; 
+    position: absolute; 
+    width: 200px; 
+    height: 75px; 
+    background-color: #e0e0e0; 
+    text-align: center;
+}
+
 .connection_arrow {
     position: absolute;
 }
