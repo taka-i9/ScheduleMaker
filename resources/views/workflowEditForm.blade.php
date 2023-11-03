@@ -124,12 +124,16 @@
     function removeConnection(id) {
         if(id in connect_relation) {
             Object.keys(connect_relation[id]).forEach(function(v) {
-                document.getElementById("connection_" + id + "_" + v).remove();
+                document.getElementById("connection_" + id + "_" + v + "_1").remove();
+                document.getElementById("connection_" + id + "_" + v + "_2").remove();
+                document.getElementById("connection_" + id + "_" + v + "_3").remove();
             });
         }
         if(id in connect_relation_rev) {
             Object.keys(connect_relation_rev[id]).forEach(function(v) {
-                document.getElementById("connection_" + v + "_" + id).remove();
+                document.getElementById("connection_" + v + "_" + id + "_1").remove();
+                document.getElementById("connection_" + v + "_" + id + "_2").remove();
+                document.getElementById("connection_" + v + "_" + id + "_3").remove();
             });
         }
     }
@@ -160,43 +164,38 @@
             block_once = false;
             return;
         }
+        //重なっていないかの確認
+        let moving = document.getElementById(id_head + movingContent);
+        let target_rect = e.currentTarget.getBoundingClientRect();
+        let x = Number(e.clientX - target_rect.left);
+        let y = Number(e.clientY - target_rect.top);
+        let w = Number(moving.style.width.substr(0, moving.style.width.length - 2));
+        let h = Number(moving.style.height.substr(0, moving.style.height.length - 2));
+        let is_overlaped = false;
+        for(let i = 1; i < content_id; i++) {
+            if(i == movingContent || document.getElementById(id_head + i) == null) continue;
+            let content = document.getElementById(id_head + i);
+            let u = Number(content.style.marginLeft.substr(0, content.style.marginLeft.length - 2));
+            let v = Number(content.style.marginTop.substr(0, content.style.marginTop.length - 2));
+            let content_w = Number(content.style.width.substr(0, content.style.width.length - 2));
+            let content_h = Number(content.style.height.substr(0, content.style.height.length - 2));
+            if(u - w <= x && x <= u + content_w && v - h <= y && y <= v + content_h) {
+                is_overlaped = true;
+            }
+        }
+        if(is_overlaped) {
+            alert('重なっています。');
+            return;
+        }
+        document.getElementById("registration_free_field").removeEventListener("mousemove", moveContent);
+        document.getElementById("registration_free_field").removeEventListener("click", putContent);
         if(mode == "add") { 
-            document.getElementById("registration_free_field").removeEventListener("mousemove", moveContent);
-            document.getElementById("registration_free_field").removeEventListener("click", putContent);
             document.getElementById("registration_menu_" + mode).style.backgroundColor = "";
             addForm(movingContent);
             content_id++;
             mode = "";
         }
         else if(mode == "move") {
-            //重なっていないかの確認
-            let moving = document.getElementById(id_head + movingContent);
-            let target_rect = e.currentTarget.getBoundingClientRect();
-            let x = Number(e.clientX - target_rect.left);
-            let y = Number(e.clientY - target_rect.top);
-            let w = Number(moving.style.width.substr(0, moving.style.width.length - 2));
-            let h = Number(moving.style.height.substr(0, moving.style.height.length - 2));
-            let is_overlaped = false;
-            //他の座標を(u,v)として、u<x<u+u.width || u<x+width<u+u.width
-            // u<x<u+u.width || u-width<x<u+u.width-width
-            //つまり、u-width<=x<=u+u.width && v-height<=y<=v+v.height のとき、重なっている
-            for(let i = 1; i < content_id; i++) {
-                if(i == movingContent || document.getElementById(id_head + i) == null) continue;
-                let content = document.getElementById(id_head + i);
-                let u = Number(content.style.marginLeft.substr(0, content.style.marginLeft.length - 2));
-                let v = Number(content.style.marginTop.substr(0, content.style.marginTop.length - 2));
-                let content_w = Number(content.style.width.substr(0, content.style.width.length - 2));
-                let content_h = Number(content.style.height.substr(0, content.style.height.length - 2));
-                if(u - w <= x && x <= u + content_w && v - h <= y && y <= v + content_h) {
-                    is_overlaped = true;
-                }
-            }
-            if(is_overlaped) {
-                alert('重なっています。');
-                return;
-            }
-            document.getElementById("registration_free_field").removeEventListener("mousemove", moveContent);
-            document.getElementById("registration_free_field").removeEventListener("click", putContent);
             document.getElementById(id_head + movingContent + "_margin_left_form").value = document.getElementById(id_head + movingContent).style.marginLeft;
             document.getElementById(id_head + movingContent + "_margin_top_form").value = document.getElementById(id_head + movingContent).style.marginTop;
             //関連するリンクを再生する
@@ -448,60 +447,117 @@
     }
 
     function createArrow(start, end) {
-        let begin_x = Number(document.getElementById(id_head + start).style.marginLeft.substring(0,document.getElementById(id_head + start).style.marginLeft.length - 2));
-        let begin_y = Number(document.getElementById(id_head + start).style.marginTop.substring(0,document.getElementById(id_head + start).style.marginTop.length - 2));
-        let end_x = Number(document.getElementById(id_head + end).style.marginLeft.substring(0,document.getElementById(id_head + end).style.marginLeft.length - 2));
-        let end_y = Number(document.getElementById(id_head + end).style.marginTop.substring(0,document.getElementById(id_head + end).style.marginTop.length - 2));
+        let begin_content = document.getElementById(id_head + start);
+        let end_content = document.getElementById(id_head + end);
+        let begin_x = Number(begin_content.style.marginLeft.substring(0, begin_content.style.marginLeft.length - 2));
+        let begin_y = Number(begin_content.style.marginTop.substring(0, begin_content.style.marginTop.length - 2));
+        let end_x = Number(end_content.style.marginLeft.substring(0, end_content.style.marginLeft.length - 2));
+        let end_y = Number(end_content.style.marginTop.substring(0, end_content.style.marginTop.length - 2));
         let diff_x = end_x - begin_x;
         let diff_y = end_y - begin_y;
         let arrow_begin_x;
         let arrow_begin_y;
         let arrow_end_x;
         let arrow_end_y;
-        let angle;
-        //始点が上側の場合
-        if(diff_y > 0) {
-            arrow_begin_x = begin_x + 100;
-            arrow_begin_y = begin_y + 75;
-            arrow_end_x = end_x + 100;
-            arrow_end_y = end_y;
-        }
-        //始点が下側の場合
-        else {
-            arrow_begin_x = begin_x + 100;
-            arrow_begin_y = begin_y;
-            arrow_end_x = end_x + 100;
-            arrow_end_y = end_y + 75;
+        let begin_width = Number(begin_content.style.width.substr(0, begin_content.style.width.length - 2));
+        let begin_height = Number(begin_content.style.height.substr(0, begin_content.style.height.length - 2));
+        let end_width = Number(end_content.style.width.substr(0, end_content.style.width.length - 2));
+        let end_height = Number(end_content.style.height.substr(0, end_content.style.height.length - 2));
+        let arrow1 = document.createElement('div');
+        arrow1.id = 'connection_' + start + '_' + end + '_1';
+        arrow1.className = 'connection_arrow';
+        document.getElementById("registration_free_field").appendChild(arrow1);
+        let arrow2 = document.createElement('div');
+        arrow2.id = 'connection_' + start + '_' + end + '_2';
+        arrow2.className = 'connection_arrow';
+        document.getElementById("registration_free_field").appendChild(arrow2);
+        let arrow3 = document.createElement('div');
+        arrow3.id = 'connection_' + start + '_' + end + '_3';
+        arrow3.className = 'connection_arrow triangle_arrow';
+        document.getElementById("registration_free_field").appendChild(arrow3);
+        let pad1 = 0;
+        let pad2 = 0;
+        //上下でつなぐ場合
+        if(Math.abs(diff_y) > Math.max(begin_height, end_height)) {
+            //始点が上側の場合
+            if(diff_y > 0) {
+                arrow_begin_x = begin_x + begin_width / 2;
+                arrow_begin_y = begin_y + begin_height;
+                arrow_end_x = end_x + end_width / 2;
+                arrow_end_y = end_y;
+                arrow3.style.marginLeft = String(arrow_end_x - 10 + 1.5) + 'px';
+                arrow3.style.marginTop = String(arrow_end_y - 20) + 'px';
+                arrow3.style.borderTop = '20px solid';
+                pad1 = 10;
+            }
+            //始点が下側の場合
+            else {
+                arrow_begin_x = begin_x + begin_width / 2;
+                arrow_begin_y = begin_y;
+                arrow_end_x = end_x + end_width / 2;
+                arrow_end_y = end_y + end_height;
+                arrow3.style.marginLeft = String(arrow_end_x - 10 + 1.5) + 'px';
+                arrow3.style.marginTop = String(arrow_end_y - 10) + 'px';
+                arrow3.style.borderBottom = '20px solid';
+                pad2 = 10;
+            }
+
+            arrow1.style.width = String(Math.abs(arrow_begin_x - arrow_end_x)) + 'px';
+            arrow1.style.height = String(Math.abs(arrow_begin_y - arrow_end_y) / 2 - pad1) + 'px';
+            arrow1.style.marginLeft = String(Math.min(arrow_begin_x, arrow_end_x)) + 'px';
+            arrow1.style.marginTop = String((arrow_begin_y + arrow_end_y) / 2) + 'px';
+            if(diff_x * diff_y >= 0) arrow1.style.borderRight = 'solid';
+            else arrow1.style.borderLeft = 'solid';
+            arrow1.style.borderTop = 'solid';
+
+            arrow2.style.width = String(Math.abs(arrow_begin_x - arrow_end_x)) + 'px';
+            arrow2.style.height = String(Math.abs(arrow_begin_y - arrow_end_y) / 2 - pad2) + 'px';
+            arrow2.style.marginLeft = String(Math.min(arrow_begin_x, arrow_end_x)) + 'px';
+            arrow2.style.marginTop = String(Math.min(arrow_begin_y, arrow_end_y) + pad2) + 'px';
+            if(diff_x * diff_y >= 0) arrow2.style.borderLeft = 'solid';
+            else arrow2.style.borderRight = 'solid';
+
         }
         //左右でつなぐ場合
-        if(Math.abs(diff_y) <= 75) {
+        else {
             //始点が左側の場合
             if(diff_x > 0) {
-                arrow_begin_x = begin_x + 200;
-                arrow_begin_y = begin_y + 37.5;
+                arrow_begin_x = begin_x + begin_width;
+                arrow_begin_y = begin_y + begin_height / 2;
                 arrow_end_x = end_x;
-                arrow_end_y = end_y + 37.5;
+                arrow_end_y = end_y + end_height / 2;
+                arrow3.style.marginLeft = String(arrow_end_x - 20) + 'px';
+                arrow3.style.marginTop = String(arrow_end_y - 10 + 1.5) + 'px';
+                arrow3.style.borderLeft = '20px solid';
+                pad2 = 10;
             }
             //始点が右側の場合
             else {
                 arrow_begin_x = begin_x;
-                arrow_begin_y = begin_y + 37.5;
-                arrow_end_x = end_x + 200;
-                arrow_end_y = end_y + 37.5;
+                arrow_begin_y = begin_y + begin_height / 2;
+                arrow_end_x = end_x + end_width;
+                arrow_end_y = end_y + end_height / 2;
+                arrow3.style.marginLeft = String(arrow_end_x - 10) + 'px';
+                arrow3.style.marginTop = String(arrow_end_y - 10 + 1.5) + 'px';
+                arrow3.style.borderRight = '20px solid';
+                pad1 = 10;
             }
+            
+            arrow1.style.width = String(Math.abs(arrow_begin_x - arrow_end_x) / 2 - pad1) + 'px';
+            arrow1.style.height = String(Math.abs(arrow_begin_y - arrow_end_y)) + 'px';
+            arrow1.style.marginLeft = String(Math.min(arrow_begin_x, arrow_end_x) + pad1) + 'px';
+            arrow1.style.marginTop = String(Math.min(arrow_begin_y, arrow_end_y)) + 'px';
+            arrow1.style.borderRight = 'solid';
+            if(diff_x * diff_y >= 0) arrow1.style.borderTop = 'solid';
+            else arrow1.style.borderBottom = 'solid';
+            
+            arrow2.style.width = String(Math.abs(arrow_begin_x - arrow_end_x) / 2 - pad2) + 'px';
+            arrow2.style.height = String(Math.abs(arrow_begin_y - arrow_end_y)) + 'px';
+            arrow2.style.marginLeft = String((arrow_begin_x + arrow_end_x) / 2) + 'px';
+            arrow2.style.marginTop = String(Math.min(arrow_begin_y, arrow_end_y)) + 'px';
+            if(diff_x * diff_y >= 0) arrow2.style.borderBottom = 'solid';
+            else arrow2.style.borderTop = 'solid';
         }
-        if(Math.abs(arrow_end_x - arrow_begin_x) == 0) angle = 90;
-        else angle = Math.atan(Math.abs(arrow_end_y - arrow_begin_y) / Math.abs(arrow_end_x - arrow_begin_x)) / Math.PI * 180;
-        let newArrow = document.createElement("div");
-        newArrow.id = "connection_" + start + "_" + end;
-        newArrow.className = "connection_arrow";
-        newArrow.style.marginLeft = String(arrow_begin_x < arrow_end_x ? arrow_begin_x : arrow_end_x) + "px";
-        newArrow.style.marginTop = String(arrow_begin_y < arrow_end_y ? arrow_begin_y : arrow_end_y) + "px";
-        newArrow.style.width = String(Math.abs(arrow_end_x - arrow_begin_x)) + "px";
-        newArrow.style.height = String(Math.abs(arrow_end_y - arrow_begin_y)) + "px";
-        newArrow.style.backgroundImage = "linear-gradient("+ ((arrow_end_x - arrow_begin_x) * (arrow_end_y - arrow_begin_y) > 0 ? "" : "-") + angle + "deg, transparent 49%, black 49%, black 51%, transparent 51%)";
-        document.getElementById("registration_free_field").appendChild(newArrow);
-        //矢印の始点と終点について、明示的に示す必要がある
     }
 
     if("{{ $contents_num }}" != "0") {
