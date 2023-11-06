@@ -351,6 +351,10 @@
 .schedule_month_common {
     border-top: 1px solid;
     border-bottom: 1px solid;
+    font-size: 80%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .schedule_month_cont_left {

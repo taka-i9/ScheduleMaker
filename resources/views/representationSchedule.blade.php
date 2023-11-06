@@ -48,23 +48,24 @@
     ?>];
 
     //並べ替える
-    original_schedule_data.sort(function(a, b) {
-        if(a['begin_date'] == b['begin_date']) {
-            if(a['begin_time'] == b['begin_time']) {
-                if(a['end_date'] == b['end_date']) {
-                    return a['end_time'] < b['end_time'] ? -1 : 1;
-                }
-                else return a['end_date'] <= b['end_date'] ? -1 : 1 ;
-            }
-            else return a['begin_time'] < b['begin_time'] ? -1 : 1;
+    original_schedule_data.sort(function(_a, _b) {
+        let a = [];
+        let b = [];
+        a.push(Number(_a['begin_date'].substr(0, 4)), Number(_a['begin_date'].substr(5, 2)), Number(_a['begin_date'].substr(8, 2)));
+        a.push(Number(_a['begin_time'].substr(0, 2)), Number(_a['begin_time'].substr(3, 2)));
+        b.push(Number(_b['begin_date'].substr(0, 4)), Number(_b['begin_date'].substr(5, 2)), Number(_b['begin_date'].substr(8, 2)));
+        b.push(Number(_b['begin_time'].substr(0, 2)), Number(_b['begin_time'].substr(3, 2)));
+        for(let i = 0; i < 5; i++) {
+            if(a[i] == b[i]) continue;
+            return a[i] < b[i] ? -1 : 1;
         }
-        else return a['begin_date'] < b['begin_date'] ? -1 : 1;
+        return -1;
     });
 
     //取得したデータを扱いやすいように加工する
     var schedule_data = {};
     original_schedule_data.forEach(function(data, index) {
-        let begin_date = data['begin_date'].substr(-2, 2);
+        let begin_date = Number(data['begin_date'].substr(-2, 2));
         if(!schedule_data[begin_date]) {
             schedule_data[begin_date] = []; 
         }
@@ -186,8 +187,14 @@
                 content_data_overflow.id = 'schedule_' + String(date.getMonth()) + '_' + String(date.getDate()) + '_overflow';
                 content_data_overflow.style.width = '100%';
                 content_data_overflow.style.height = '20%';
-                content_data_overflow.style.textAlign = 'center';
                 content_data_overflow.hidden = true;
+                let content_data_overflow_child = document.createElement('div');
+                content_data_overflow_child.id = 'schedule_' + String(date.getMonth()) + '_' + String(date.getDate()) + '_overflow_text';
+                content_data_overflow_child.style.textAlign = 'center';
+                content_data_overflow_child.style.width = '100%';
+                content_data_overflow_child.style.height = '90%';
+                content_data_overflow_child.style.fontSize = '80%';
+                content_data_overflow.appendChild(content_data_overflow_child);
                 content_data.appendChild(content_data_overflow);
                 display_content.appendChild(content_data);
                 date = date.setDate(date.getDate() + 1);
@@ -202,18 +209,24 @@
                 let end_date = Number(data['end_date'].substr(-2, 2));
                 let pos = 0;
                 for(; pos < 4; pos++) {
-                    if(document.getElementById('schedule_' + String(month) + '_' + String(begin_date) + '_' + String(pos)).innerHTML === '') break;
+                    if(document.getElementById('schedule_' + String(month) + '_' + String(begin_date) + '_' + String(pos)).childElementCount == 0) break;
                 }
                 for(let i = begin_date; i <= end_date; i++) {
                     if(pos != 4) {
                         let schedule_view_content = document.createElement('div');
                         schedule_view_content.className = 'schedule_month_common';
-                        if(i == begin_date) {
+                        schedule_view_content.style.height = '90%';
+                        let w = document.getElementById('schedule_' + String(month) + '_' + String(i) + '_' + String(pos)).offsetWidth;
+                        let p = 1.00;
+                        if(i == begin_date && !data['is_begin_out']) {
                             schedule_view_content.className += ' schedule_month_cont_left';
+                            p -= 0.05;
                         }
-                        if(i == end_date) {
+                        if(i == end_date && !data['is_end_out']) {
                             schedule_view_content.className += ' schedule_month_cont_right';
+                            p -= 0.05;
                         }
+                        schedule_view_content.style.width = String(w * p) + 'px';
                         schedule_view_content.style.backgroundColor = data['color'];
                         if(i == begin_date) schedule_view_content.innerText = data['name'];
                         else schedule_view_content.innerHTML = '&nbsp;';
@@ -222,13 +235,14 @@
                     else {
                         let last_content = document.getElementById('schedule_' + String(month) + '_' + String(i) + '_' + String(pos - 1));
                         let overflow = document.getElementById('schedule_' + String(month) + '_' + String(i) + '_overflow');
+                        let overflow_child = document.getElementById('schedule_' + String(month) + '_' + String(i) + '_overflow_text');
                         last_content.hidden = true;
                         overflow.hidden = false;
-                        if(overflow.innerHTML === '') {
-                            if(last_content.innerHTML === '') overflow.innerHTML = '+1';
-                            else overflow.innerHTML = '+2';
+                        if(overflow_child.innerHTML === '') {
+                            if(last_content.innerHTML === '') overflow_child.innerHTML = '+1';
+                            else overflow_child.innerHTML = '+2';
                         }
-                        else overflow.innerHTML = '+' + String(Number(overflow.innerHTML.substr(1)) + 1);
+                        else overflow_child.innerHTML = '+' + String(Number(overflow_child.innerHTML.substr(1)) + 1);
                     }
                 }
             });
